@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="console" />
+		<Option platforms="Windows;Unix;" />
+		<Option execution_dir="../../build/" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Option extended_obj_names="1" />
+		<Build>
+			<Target title="Debug">
+				<Option platforms="Windows;Unix;" />
+				<Option output="../../build/console" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="../../build/" />
+				<Option object_output="../../build/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="../../trash/config.xml ../../trash/simple.lua ../../data/let2.avi ../../data/res.avi" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option platforms="Windows;Unix;" />
+				<Option output="../../build/console" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="../../build/" />
+				<Option object_output="../../build/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option use_console_runner="0" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-std=c++11" />
+			<Add option="-Wall" />
+			<Add option="`pkg-config --cflags Qt5Core`" />
+			<Add option="`pkg-config --cflags Qt5Widgets`" />
+			<Add option="`pkg-config --cflags opencv`" />
+			<Add option="`pkg-config --cflags lua`" />
+			<Add option="-fPIC" />
+			<Add directory="." />
+			<Add directory="../../" />
+			<Add directory="../../../../windows/include" />
+			<Add directory="../../../../windows/include/QtCore" />
+			<Add directory="../../../../windows/include/QtWidgets" />
+		</Compiler>
+		<Linker>
+			<Add option="`pkg-config --libs Qt5Core`" />
+			<Add option="`pkg-config --libs Qt5Widgets`" />
+			<Add option="`pkg-config --libs opencv`" />
+			<Add option="`pkg-config --libs lua`" />
+			<Add option="-lstend" />
+			<Add option="-lQt5Core" />
+			<Add option="-lQt5Widgets" />
+			<Add option="-llua" />
+			<Add option="-lm" />
+			<Add option="-lopencv_core" />
+			<Add option="-lopencv_highgui" />
+			<Add option="-lopencv_imgproc" />
+			<Add directory="../../build/" />
+			<Add directory="../../../../windows/lib" />
+		</Linker>
+		<Unit filename="main.cpp" />
+		<Extensions>
+			<envvars />
+			<code_completion />
+			<lib_finder disable_auto="1">
+				<lib name="lua" />
+				<lib name="Qt5Core" />
+				<lib name="opencv" />
+				<lib name="Qt5Widgets" />
+			</lib_finder>
+			<debugger />
+			<DoxyBlocks>
+				<comment_style block="0" line="0" />
+				<doxyfile_project output_language="Russian" />
+				<doxyfile_build />
+				<doxyfile_warnings />
+				<doxyfile_output />
+				<doxyfile_dot />
+				<general />
+			</DoxyBlocks>
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
