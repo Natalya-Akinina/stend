@@ -1,4 +1,3 @@
-
 #ifndef _OPENCV_HPP
 #define _OPENCV_HPP
 
@@ -8,6 +7,8 @@
 
 void opencv_register(lua_State * state);
 
+int lua_imread(lua_State * state); // TODO
+int lua_imwrite(lua_State * state); // TODO
 int lua_delete(lua_State * state);
 int lua_threshold(lua_State * state);
 int lua_split(lua_State * state);
