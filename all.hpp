@@ -21,6 +21,7 @@ using namespace cv;
 
 // ############################################################################
 // Исключения
+// TEST
 
 #define throw_ \
 {\
@@ -35,7 +36,7 @@ using namespace cv;
 }
 
 #define throw_null(pointer) \
-	throw_if((pointer) == NULL);
+	throw_if((pointer) == NULL)
 
 // ############################################################################
 // Отладочная печать
@@ -45,5 +46,3 @@ int printf_error(const char * format, ...);
 
 #endif
 
-
-#include 
