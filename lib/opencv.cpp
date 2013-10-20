@@ -3,7 +3,6 @@
 
 void opencv_register(lua_State * state)
 {
-	lua_register(state, "delete", lua_delete);
 	lua_register(state, "threshold", lua_threshold);
 	lua_register(state, "split", lua_split);
 	lua_register(state, "merge", lua_merge);
@@ -12,113 +11,160 @@ void opencv_register(lua_State * state)
 
 // ############################################################################ 
 
-// Удаление матрицы
-int lua_delete(lua_State * state)
-{
-	// TODO
-    Mat * img = (Mat *) lua_touserdata(state, 1);
-	
-	delete img;
-
-	return 0;
-}
-
 // Пороговое преобразование
 int lua_threshold(lua_State * state)
 {
-    Mat * src, dst; //вход и выход
-	unsigned thr, type; //порог и обозначение вида преобразования
+	int ret = 1;
+	image dst_img;
+	Mat * dst; //вход и выход
 
-    src = CImage::to_Mat((s_image *) lua_touserdata(state, 1));
-	thr = lua_tonumber(state, 2);
-    type = lua_tonumber(state, 3);
-	
-	dst = src->clone();
-
-	if(thr > 255)
+	try
 	{
-		printf_error("lua_threshold: mp > 255\n");
+		unsigned thr, type; //порог и обозначение вида преобразования
+		Mat * src = CImage::to_Mat((s_image *) lua_touserdata(state, 1));
 
-        return 0;
-    }
+		thr = lua_tonumber(state, 2);
+		type = lua_tonumber(state, 3);
+		
+		throw_if(thr > 255);
 
-	switch(type)
-	{
-		case 0:
+		throw_null(dst_img = image_copy(* src));
+		dst = CImage::to_Mat(dst_img);
+
+		switch(type)
 		{
-			threshold(* src, dst, thr, 255, CV_THRESH_TOZERO_INV);
-			lua_pushlightuserdata(state, CImage::from_Mat(dst));
+			case 0:
+			{
+				threshold(* src, * dst, thr, 255, CV_THRESH_TOZERO_INV);
+				lua_pushlightuserdata(state, dst_img);
 
-			return 1;
-		}
-		case 1:
-		{
-			threshold(* src, dst, thr, 255, CV_THRESH_BINARY);
-			lua_pushlightuserdata(state, CImage::from_Mat(dst));
+				break;
+			}
+			case 1:
+			{
+				threshold(* src, * dst, thr, 255, CV_THRESH_BINARY);
+				lua_pushlightuserdata(state, dst_img);
 
-			return 1;
+				return 1;
+			}
 		}
 	}
+	catch(...)
+	{
+		image_delete(dst_img);
 
-	printf_error("lua_threshold: bz not in { 0, 1 }\n");
+		ret = 0;
+	}
 
-	return 0;
+	return ret;
 }
 
 // Разделение на каналы
 int lua_split(lua_State * state)
 {
-	Mat * src;
-    vector<Mat> ch;
+	image * _ch_img;
+	Mat ** _ch;
+	unsigned size, v;
+	int ret;
 
-    src = CImage::to_Mat((s_image *) lua_touserdata(state, 1));
+	try
+	{
+		vector<Mat> ch;
+	    Mat * src = CImage::to_Mat((s_image *) lua_touserdata(state, 1));
 
-    split(* src, ch);
+		split(* src, ch);
+		size = ch.size();
+		ret = size;
 
-    lua_pushlightuserdata(state, CImage::from_Mat(ch[0]));
-    lua_pushlightuserdata(state, CImage::from_Mat(ch[1]));
-    lua_pushlightuserdata(state, CImage::from_Mat(ch[2]));
+		throw_null(_ch_img = new image[size]);
+		throw_null(_ch = new Mat *[size]);
 
-    return 3;
+		for(v = 0; v < size; v++)
+		{
+			throw_null(_ch_img[v] = image_copy(ch[v]));
+			_ch[v] = CImage::to_Mat(_ch_img[v]);
+		}
+
+		for(v = 0; v < size; v++)
+			lua_pushlightuserdata(state, _ch_img[v]);
+	}
+	catch(...)
+	{
+		if(_ch != NULL)
+			for(v = 0; v < size; v++)
+				image_delete(_ch_img[v]);
+
+			delete [] _ch;
+
+		ret = 0;
+	}
+
+	delete [] _ch_img;
+	delete [] _ch;
+
+    return ret;
 }
 
 // Объединение каналов
 int lua_merge(lua_State * state)
 {
-	Mat * ch_1, * ch_2, * ch_3, dst;
-    vector<Mat> ch;
+	int ret = 1;
+	image dst_img;
+	Mat * dst;
 
-    ch_1 = CImage::to_Mat((s_image *) lua_touserdata(state, 1));
-    ch_2 = CImage::to_Mat((s_image *) lua_touserdata(state, 2));
-    ch_3 = CImage::to_Mat((s_image *) lua_touserdata(state, 3));
+	try
+	{
+	    vector<Mat> ch;
+		Mat * ch_1 = CImage::to_Mat((s_image *) lua_touserdata(state, 1));
+	    Mat * ch_2 = CImage::to_Mat((s_image *) lua_touserdata(state, 2));
+		Mat * ch_3 = CImage::to_Mat((s_image *) lua_touserdata(state, 3));
 
-	dst.create(ch_1->size(), CV_8UC3);
+		throw_null(dst_img = image_create(ch_1->rows, ch_1->cols, 3));
+		dst = CImage::to_Mat(dst_img);
 
-	ch.push_back(* ch_1);
-	ch.push_back(* ch_2);
-	ch.push_back(* ch_3);
+		ch.push_back(* ch_1);
+		ch.push_back(* ch_2);
+		ch.push_back(* ch_3);
 
-    merge(ch, dst);
+		merge(ch, * dst);
 
-    lua_pushlightuserdata(state, CImage::from_Mat(dst));
+	    lua_pushlightuserdata(state, dst_img);
+	}
+	catch(...)
+	{
+		image_delete(dst_img);
 
-    return 1;
+		ret = 0;
+	}
+
+    return ret;
 }
 
 // Поканальное побитовое И
 int lua_bitwise_and(lua_State * state)
 {
-	Mat * op_1, * op_2, dst;
+	int ret = 1;
+	image dst_img;
+	Mat * dst;
 
-    op_1 = CImage::to_Mat((s_image *) lua_touserdata(state, 1));
-    op_2 = CImage::to_Mat((s_image *) lua_touserdata(state, 2));
+	try
+	{
+	    Mat * op_1 = CImage::to_Mat((s_image *) lua_touserdata(state, 1));
+		Mat * op_2 = CImage::to_Mat((s_image *) lua_touserdata(state, 2));
 
-	dst.create(op_1->size(), CV_8U);
+		throw_null(dst_img = image_create(op_1->rows, op_1->cols, op_1->channels()));
+		dst = CImage::to_Mat(dst_img);
 
-	bitwise_and(* op_1, * op_2, dst);
+		bitwise_and(* op_1, * op_2, * dst);
+		lua_pushlightuserdata(state, dst_img);
+	}
+	catch(...)
+	{
+		matrix_delete(dst);
 
-	lua_pushlightuserdata(state, CImage::from_Mat(dst));
+		ret = 0;
+	}
 
-    return 1;
+    return ret;
 }
 

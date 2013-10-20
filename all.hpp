@@ -44,5 +44,10 @@ using namespace cv;
 int printf_TODO(const char * format, ...);
 int printf_error(const char * format, ...);
 
+// ############################################################################ 
+// Выделение памяти
+
+void * alloc(const unsigned type_size, const unsigned dim, ...);
+
 #endif
 

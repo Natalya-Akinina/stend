@@ -6,6 +6,7 @@
 #include "config.hpp"
 #include "lib/module.hpp"
 #include "lib/opencv.hpp"
+#include "lib/matrix.hpp"
 #include "lib/image.hpp"
 
 class CLua

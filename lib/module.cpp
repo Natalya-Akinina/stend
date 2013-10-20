@@ -67,7 +67,10 @@ case MY_TYPE:\
 
 			SET_PARAM(INT_TYPE, int, lua_tointeger);
 			SET_PARAM(DOUBLE_TYPE, double, lua_tonumber);
-			SET_PARAM(IMAGE_TYPE, s_image *, lua_touserdata);
+			// TODO char *
+			SET_PARAM(BOOL_TYPE, _bool, lua_tointeger);
+			SET_PARAM(MATRIX_TYPE, matrix, lua_touserdata);
+			SET_PARAM(IMAGE_TYPE, image, lua_touserdata);
 		}
 
 		v++;
@@ -95,7 +98,10 @@ case MY_TYPE:\
 
 			GET_RETURN_VALUES(INT_TYPE, int, lua_pushinteger);
 			GET_RETURN_VALUES(DOUBLE_TYPE, double, lua_pushnumber);
-			GET_RETURN_VALUES(IMAGE_TYPE, s_image *, lua_pushlightuserdata);
+			// TODO char *
+			GET_RETURN_VALUES(BOOL_TYPE, _bool, lua_pushinteger);
+			GET_RETURN_VALUES(MATRIX_TYPE, matrix, lua_pushlightuserdata);
+			GET_RETURN_VALUES(IMAGE_TYPE, image, lua_pushlightuserdata);
 		}
 
 		v++;

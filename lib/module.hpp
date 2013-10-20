@@ -3,7 +3,7 @@
 #define MODULE_HPP
 
 #include "all.hpp"
-#include "lib/interface.hpp"
+#include "lib/interface.h"
 
 typedef int (* init_function)(char *, const unsigned, unsigned *, unsigned *);
 typedef int (* destroy_function)();
