@@ -1,4 +1,3 @@
-
 #ifndef _OPENCV_HPP
 #define _OPENCV_HPP
 
