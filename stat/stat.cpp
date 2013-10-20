@@ -46,7 +46,6 @@ void CStat::run(const QString src_fname, const QString dst_fname)
 
 		CImage::clear();
 
-		printf_TODO("%u\n", counter);
 		//if(counter > 100) // TODO убрать
 		//	break; // TODO убрать
 	}
