@@ -22,7 +22,7 @@ int main(const int argc, const char * argv[])
 		CStat stat(lua);
 
 		lua.load_module("demo_image");
-		lua.load_module("demo_matrix");
+		// lua.load_module("demo_matrix");
 
 		lua.load_script(argv[2]);
 

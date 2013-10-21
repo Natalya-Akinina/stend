@@ -11,7 +11,7 @@
 		<Build>
 			<Target title="Debug">
 				<Option platforms="Windows;Unix;" />
-				<Option output="build/libstend" prefix_auto="1" extension_auto="1" />
+				<Option output="build/stend" prefix_auto="1" extension_auto="1" />
 				<Option object_output="build/" />
 				<Option type="3" />
 				<Option compiler="gcc" />
@@ -20,12 +20,10 @@
 				<Compiler>
 					<Add option="-g" />
 				</Compiler>
-				<Linker>
-				</Linker>
 			</Target>
 			<Target title="Release">
 				<Option platforms="Windows;Unix;" />
-				<Option output="build/libstend" prefix_auto="1" extension_auto="1" />
+				<Option output="build/stend" prefix_auto="1" extension_auto="1" />
 				<Option object_output="build/" />
 				<Option type="3" />
 				<Option compiler="gcc" />
@@ -72,9 +70,11 @@
 		<Unit filename="config.hpp" />
 		<Unit filename="lib/image.cpp" />
 		<Unit filename="lib/image.hpp" />
-		<Unit filename="lib/interface.hpp" />
+		<Unit filename="lib/interface.h" />
 		<Unit filename="lib/lua.cpp" />
 		<Unit filename="lib/lua.hpp" />
+		<Unit filename="lib/matrix.cpp" />
+		<Unit filename="lib/matrix.hpp" />
 		<Unit filename="lib/module.cpp" />
 		<Unit filename="lib/module.hpp" />
 		<Unit filename="lib/opencv.cpp" />
