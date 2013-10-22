@@ -160,7 +160,7 @@ int lua_bitwise_and(lua_State * state)
 	}
 	catch(...)
 	{
-		matrix_delete(dst);
+		image_delete(dst_img);
 
 		ret = 0;
 	}

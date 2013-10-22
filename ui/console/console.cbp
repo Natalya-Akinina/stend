@@ -16,7 +16,7 @@
 				<Option object_output="../../build/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="../../trash/config.xml ../../trash/simple.lua ../../data/let2.avi ../../data/res.avi" />
+				<Option parameters="../../trash/config.xml ../../modules/demo_image/run.lua ../../data/let2.avi ../../data/res.avi" />
 				<Compiler>
 					<Add option="-g" />
 				</Compiler>

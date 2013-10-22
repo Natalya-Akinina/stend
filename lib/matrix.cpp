@@ -3,9 +3,9 @@
 
 vector< shared_ptr<Mat> > matrices;
 
-e_matrix_element_type depth_to_met(const int depth)
+int depth_to_met(const int depth)
 {
-	e_matrix_element_type type;
+	int type;
 
 	switch(depth)
 	{
@@ -32,7 +32,7 @@ e_matrix_element_type depth_to_met(const int depth)
 
 // ############################################################################
 
-matrix matrix_create(const unsigned height, const unsigned width, const unsigned ch_num, const e_matrix_element_type element_type)
+matrix matrix_create(const unsigned height, const unsigned width, const unsigned ch_num, const int element_type)
 {
 	Mat * mtx = NULL;
 
@@ -154,7 +154,7 @@ GET_INFO(matrix_height, rows)
 GET_INFO(matrix_width, cols)
 GET_INFO(matrix_number_of_channel, channels())
 
-e_matrix_element_type matrix_element_type(matrix mtx)
+int matrix_element_type(matrix mtx)
 {
 	throw_null(mtx);
 
@@ -169,7 +169,7 @@ e_matrix_element_type matrix_element_type(matrix mtx)
 	throw_;
 }
 
-int matrix_element_type(matrix mtx, enum e_matrix_element_type * value)
+int matrix_element_type(matrix mtx, int * value)
 {
 	int ret = 0;
 
