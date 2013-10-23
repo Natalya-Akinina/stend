@@ -109,20 +109,79 @@ matrix matrix_load_image(const char * fname)
 
 int matrix_save_image(matrix mtx, const char * fname)
 {
-	// TODO
-	;
+	throw_TODO;
 }
 
 int matrix_get_value(matrix mtx, const unsigned row, const unsigned column, const unsigned channel, void * value)
 {
-	// TODO
-	;
+	int ret = 0;
+
+	try
+	{
+		Mat * _mtx = (Mat *) mtx;
+
+		switch(_mtx->depth())
+		{
+
+#define GET_VALUE(type_ind, type)\
+case type_ind:\
+{\
+	* (type *) value = * ((type *) _mtx->data + _mtx->step[0] * row + _mtx->step[1] * column + channel);\
+\
+	break;\
+}
+
+			GET_VALUE(CV_8U, uint8_t)
+			GET_VALUE(CV_64F, double)
+
+			default:
+			{
+				throw_;
+			}
+		}
+	}
+	catch(...)
+	{
+		ret = -1;
+	}
+
+	return ret;
 }
 
 int matrix_set_value(matrix mtx, const unsigned row, const unsigned column, const unsigned channel, const void * value)
 {
-	// TODO
-	;
+	int ret = 0;
+
+	try
+	{
+		Mat * _mtx = (Mat *) mtx;
+
+		switch(_mtx->depth())
+		{
+
+#define SET_VALUE(type_ind, type)\
+case type_ind:\
+{\
+	 * ((type *) _mtx->data + _mtx->step[0] * row + _mtx->step[1] * column + channel) = * (type *) value;\
+\
+	break;\
+}
+
+			SET_VALUE(CV_8U, uint8_t)
+			SET_VALUE(CV_64F, double)
+
+			default:
+			{
+				throw_;
+			}
+		}
+	}
+	catch(...)
+	{
+		ret = -1;
+	}
+
+	return ret;
 }
 
 #define GET_INFO(fun, param)\
@@ -203,6 +262,24 @@ int matrix_delete(matrix mtx)
 	}
 
 	return -1;
+}
+
+int matrix_pointer_to_data(matrix mtx, void ** ptr)
+{
+	int ret = 0;
+
+	try
+	{
+		throw_null(mtx);
+
+		* ptr = (void *) ((Mat *) mtx)->data;
+	}
+	catch(...)
+	{
+		ret = -1;
+	}
+
+	return ret;
 }
 
 // ############################################################################

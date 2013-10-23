@@ -27,6 +27,7 @@ int matrix_width(matrix mtx, unsigned * value);
 int matrix_number_of_channel(matrix mtx, unsigned * value);
 int matrix_element_type(matrix mtx, int * value);
 int matrix_delete(matrix mtx);
+int matrix_pointer_to_data(matrix mtx, void ** ptr);
 
 // Внутристендовые перегрузки - удобные, но возбуждающие исключения
 unsigned matrix_height(matrix mtx);

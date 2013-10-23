@@ -29,6 +29,12 @@ using namespace cv;
 	throw 1;\
 };
 
+#define throw_TODO \
+{\
+	fprintf(stderr, "TODO ");\
+	throw_;\
+};
+
 #define throw_if(condition) \
 {\
 	if((condition))\
