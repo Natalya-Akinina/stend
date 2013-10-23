@@ -22,8 +22,6 @@ class CImage
 		static Mat * to_Mat(s_image * img);
 };
 
-image image_create(const unsigned height, const unsigned width, const unsigned ch_num);
-int image_delete(const image img);
 image image_copy(const Mat & img); // Удобная перегрузка
 
 #endif
