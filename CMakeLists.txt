@@ -29,7 +29,7 @@ endif()
 
 ############################################################################
 
-set(sources_lib lib/lua.cpp lib/opencv.cpp lib/module.cpp lib/image.cpp)
+set(sources_lib lib/lua.cpp lib/opencv.cpp lib/module.cpp lib/matrix.cpp lib/image.cpp)
 set(sources_stat stat/stat.cpp)
 set(sources ${sources_lib} ${sources_stat} config.cpp various.cpp)
 

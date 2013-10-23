@@ -3,17 +3,18 @@
 #define MODULE_HPP
 
 #include "all.hpp"
-#include "lib/interface.hpp"
+#include "lib/interface.h"
+#include "lib/image.hpp"
 
 typedef int (* init_function)(char *, const unsigned, unsigned *, unsigned *);
 typedef int (* destroy_function)();
 typedef int (* get_name_function)(const bool, const unsigned, char *, const unsigned);
-typedef int (* get_type_function)(const bool, const unsigned, e_type *);
+typedef int (* get_type_function)(const bool, const unsigned, int *);
 typedef int (* get_value_function)(const bool, const unsigned, void *);
 typedef int (* set_value_function)(const bool, const unsigned, const void *);
 typedef int (* run_function)();
 
-typedef pair<QString, e_type> t_elem;
+typedef pair<QString, int> t_elem;
 
 class CModule
 {

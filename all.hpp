@@ -29,6 +29,12 @@ using namespace cv;
 	throw 1;\
 };
 
+#define throw_TODO \
+{\
+	fprintf(stderr, "TODO ");\
+	throw_;\
+};
+
 #define throw_if(condition) \
 {\
 	if((condition))\
@@ -43,6 +49,11 @@ using namespace cv;
 
 int printf_TODO(const char * format, ...);
 int printf_error(const char * format, ...);
+
+// ############################################################################ 
+// Выделение памяти
+
+void * alloc(const unsigned type_size, const unsigned dim, ...);
 
 #endif
 

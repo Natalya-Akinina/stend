@@ -2,6 +2,7 @@
 #include "all.hpp"
 #include "lib/lua.hpp"
 #include "lib/module.hpp"
+#include "lib/matrix.hpp"
 #include "lib/image.hpp"
 #include "stat/stat.hpp"
 
@@ -14,12 +15,14 @@ int main(const int argc, const char * argv[])
 		throw_if(argc != 5);
 
 		CConfig::load(argv[1]);
+		CMatrix::init();
 		CImage::init();
 
 		CLua lua;
 		CStat stat(lua);
 
-		lua.load_module("ica");
+		lua.load_module("demo_image");
+		// lua.load_module("demo_matrix");
 
 		lua.load_script(argv[2]);
 
@@ -33,6 +36,7 @@ int main(const int argc, const char * argv[])
 		ret = -1;
 	}
 
+	CMatrix::destroy();
 	CImage::destroy();
 
 	return ret;

@@ -9,6 +9,9 @@ CModule::CModule(const QString fname)
 	library.setFileName(fname);
 	library.load();
 
+	// ############################################################################ 
+	// Функции
+
 	throw_null(_init = (init_function) library.resolve("init"));
 	throw_null(_destroy = (destroy_function) library.resolve("destroy"));
 	throw_null(_get_name = (get_name_function) library.resolve("get_name"));
@@ -16,6 +19,34 @@ CModule::CModule(const QString fname)
 	throw_null(_get_value = (get_value_function) library.resolve("get_value"));
 	throw_null(_set_value = (set_value_function) library.resolve("set_value"));
 	throw_null(_run = (run_function) library.resolve("run"));
+
+	// ############################################################################ 
+	// Переменные
+
+#define LOAD_VARIABLE(var_name, fun_name, type)\
+{\
+	typedef type;\
+	fun_type ptr;\
+	throw_null(ptr = (fun_type) library.resolve(var_name));\
+	* ptr = & fun_name;\
+}
+
+	LOAD_VARIABLE("image_create", image_create, image (** fun_type)(const unsigned height, const unsigned width, const unsigned ch_num))
+	LOAD_VARIABLE("image_delete", image_delete, int (** fun_type)(const image img))
+	LOAD_VARIABLE("matrix_create", matrix_create, matrix (** fun_type)(const unsigned height, const unsigned width, const unsigned ch_num, const int element_type));
+	LOAD_VARIABLE("matrix_delete", matrix_delete, int (** fun_type)(matrix mtx))
+	LOAD_VARIABLE("matrix_copy", matrix_copy, matrix (** fun_type)(matrix mtx))
+	LOAD_VARIABLE("matrix_load_image", matrix_load_image, matrix (** fun_type)(const char * fname))
+	LOAD_VARIABLE("matrix_save_image", matrix_save_image, int (** fun_type)(matrix mtx, const char * fname))
+	LOAD_VARIABLE("matrix_get_value", matrix_get_value, int (** fun_type)(matrix mtx, const unsigned row, const unsigned column, const unsigned channel, void * value))
+	LOAD_VARIABLE("matrix_set_value", matrix_set_value, int (** fun_type)(matrix mtx, const unsigned row, const unsigned column, const unsigned channel, const void * value))
+	LOAD_VARIABLE("matrix_height", matrix_height, int (** fun_type)(matrix mtx, unsigned * value))
+	LOAD_VARIABLE("matrix_width", matrix_width, int (** fun_type)(matrix mtx, unsigned * value))
+	LOAD_VARIABLE("matrix_number_of_channel", matrix_number_of_channel, int (** fun_type)(matrix mtx, unsigned * value))
+	LOAD_VARIABLE("matrix_element_type", matrix_element_type, int (** fun_type)(matrix mtx, int * value))
+	LOAD_VARIABLE("matrix_pointer_to_data", matrix_pointer_to_data, int (** fun_type)(matrix mtx, void ** ptr));
+	
+	// ############################################################################ 
 
 	throw_if((* _init)(buf, buf_size, & param_num, & return_value_num));
 	_name = buf;
@@ -33,7 +64,7 @@ void CModule::load_elem(const bool is_param, const unsigned num)
 {
 	unsigned v;
 	char buf[buf_size];
-	e_type type;
+	int type;
 	vector<t_elem> & array = is_param ? _params : _return_values;
 
 	for(v = 0; v < num; v++)
@@ -67,7 +98,10 @@ case MY_TYPE:\
 
 			SET_PARAM(INT_TYPE, int, lua_tointeger);
 			SET_PARAM(DOUBLE_TYPE, double, lua_tonumber);
-			SET_PARAM(IMAGE_TYPE, s_image *, lua_touserdata);
+			SET_PARAM(STRING_TYPE, char *, lua_tostring);
+			SET_PARAM(BOOLEAN_TYPE, int, lua_toboolean);
+			SET_PARAM(MATRIX_TYPE, matrix, lua_touserdata);
+			SET_PARAM(IMAGE_TYPE, image, lua_touserdata);
 		}
 
 		v++;
@@ -95,7 +129,10 @@ case MY_TYPE:\
 
 			GET_RETURN_VALUES(INT_TYPE, int, lua_pushinteger);
 			GET_RETURN_VALUES(DOUBLE_TYPE, double, lua_pushnumber);
-			GET_RETURN_VALUES(IMAGE_TYPE, s_image *, lua_pushlightuserdata);
+			GET_RETURN_VALUES(STRING_TYPE, char *, lua_pushstring);
+			GET_RETURN_VALUES(BOOLEAN_TYPE, int, lua_pushboolean);
+			GET_RETURN_VALUES(MATRIX_TYPE, matrix, lua_pushlightuserdata);
+			GET_RETURN_VALUES(IMAGE_TYPE, image, lua_pushlightuserdata);
 		}
 
 		v++;

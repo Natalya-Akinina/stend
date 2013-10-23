@@ -50,17 +50,16 @@ void CLua::load_script(const QString fname)
 
 Mat * CLua::run(const Mat & src)
 {
-	s_image * _dst;
-	CImage _src(src);
+	Mat * _dst;
 
 	lua_getglobal(state, "main");
-    lua_pushlightuserdata(state, & _src.img);
+    lua_pushlightuserdata(state, image_copy(src));
 
 	throw_if(lua_pcall(state, 1, 1, 0) != LUA_OK);
 
-	_dst = (s_image *) lua_touserdata(state, 1);
+	_dst = CImage::to_Mat((s_image *) lua_touserdata(state, 1));
 	lua_pop(state, 1);
 
-	return (Mat *) _dst->mat;
+	return _dst;
 }
 
