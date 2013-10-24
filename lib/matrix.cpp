@@ -74,7 +74,7 @@ matrix matrix_copy(matrix mtx)
 	try
 	{
 		throw_null(mtx);
-		throw_null(_mtx = (Mat *) matrix_create(matrix_height(mtx), matrix_width(mtx), matrix_number_of_channel(mtx), matrix_element_type(mtx)));
+		throw_null(_mtx = (Mat *) matrix_create(my_matrix_height(mtx), my_matrix_width(mtx), my_matrix_number_of_channel(mtx), my_matrix_element_type(mtx)));
 
 		* _mtx = ((Mat *) mtx)->clone();
 	}
@@ -184,8 +184,8 @@ case type_ind:\
 	return ret;
 }
 
-#define GET_INFO(fun, param)\
-unsigned fun(matrix mtx)\
+#define GET_INFO(fun, my_fun, param)\
+unsigned my_fun(matrix mtx)\
 {\
 	throw_null(mtx);\
 \
@@ -199,7 +199,7 @@ int fun(matrix mtx, unsigned * value)\
 	try\
 	{\
 		throw_null(value);\
-		* value = fun(mtx);\
+		* value = my_fun(mtx);\
 	}\
 	catch(...)\
 	{\
@@ -209,11 +209,11 @@ int fun(matrix mtx, unsigned * value)\
 	return ret;\
 }
 
-GET_INFO(matrix_height, rows)
-GET_INFO(matrix_width, cols)
-GET_INFO(matrix_number_of_channel, channels())
+GET_INFO(matrix_height, my_matrix_height, rows)
+GET_INFO(matrix_width, my_matrix_width, cols)
+GET_INFO(matrix_number_of_channel, my_matrix_number_of_channel, channels())
 
-int matrix_element_type(matrix mtx)
+int my_matrix_element_type(matrix mtx)
 {
 	throw_null(mtx);
 
@@ -235,7 +235,7 @@ int matrix_element_type(matrix mtx, int * value)
 	try
 	{
 		throw_null(value);
-		* value = matrix_element_type(mtx);
+		* value = my_matrix_element_type(mtx);
 	}
 	catch(...)
 	{
