@@ -7,18 +7,18 @@ CModule::CModule(const QString fname)
 	char buf[buf_size];
 
 	library.setFileName(fname);
-	library.load();
+	throw_if(! library.load());
 
 	// ############################################################################ 
 	// Функции
 
-	throw_null(_init = (init_function) library.resolve("init"));
-	throw_null(_destroy = (destroy_function) library.resolve("destroy"));
-	throw_null(_get_name = (get_name_function) library.resolve("get_name"));
-	throw_null(_get_type = (get_type_function) library.resolve("get_type"));
-	throw_null(_get_value = (get_value_function) library.resolve("get_value"));
-	throw_null(_set_value = (set_value_function) library.resolve("set_value"));
-	throw_null(_run = (run_function) library.resolve("run"));
+	throw_null(_init = (init_function) resolve("init"));
+	throw_null(_destroy = (destroy_function) resolve("destroy"));
+	throw_null(_get_name = (get_name_function) resolve("get_name"));
+	throw_null(_get_type = (get_type_function) resolve("get_type"));
+	throw_null(_get_value = (get_value_function) resolve("get_value"));
+	throw_null(_set_value = (set_value_function) resolve("set_value"));
+	throw_null(_run = (run_function) resolve("run"));
 
 	// ############################################################################ 
 	// Переменные
@@ -27,7 +27,7 @@ CModule::CModule(const QString fname)
 {\
 	typedef type;\
 	fun_type ptr;\
-	throw_null(ptr = (fun_type) library.resolve(var_name));\
+	throw_null(ptr = (fun_type) resolve(var_name));\
 	* ptr = & fun_name;\
 }
 
@@ -58,6 +58,21 @@ CModule::CModule(const QString fname)
 CModule::~CModule()
 {
 	throw_if((* _destroy)());
+}
+
+QFunctionPointer CModule::resolve(const QString name)
+{
+	QFunctionPointer ptr = NULL;
+
+	ptr = library.resolve(name.toLocal8Bit());
+
+	// Если вдруг Borland'овский cdecl
+	if(ptr == NULL)
+		ptr = library.resolve((QString("_") + name).toLocal8Bit());
+
+	throw_null(ptr);
+
+	return ptr;
 }
 
 void CModule::load_elem(const bool is_param, const unsigned num)

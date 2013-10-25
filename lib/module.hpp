@@ -31,6 +31,7 @@ class CModule
 	set_value_function _set_value;
 	run_function _run;
 
+	QFunctionPointer resolve(const QString name);
 	void load_elem(const bool is_param, const unsigned num);
 
 	public:

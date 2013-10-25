@@ -26,29 +26,33 @@ void CStat::run(const QString src_fname, const QString dst_fname)
 
 	sec_per_frame.clear();
 
+	auto wait_key_and_clear = [] (int ms)
+	{
+		waitKey(ms);
+	
+		CImage::clear();
+	};
+
 	for(counter = 0; src.read(src_frame); counter++)
 	{
+		if(counter)
+			wait_key_and_clear(1000 / fps);
+
 		clock_gettime(CLOCK_REALTIME, & ts_before);
 
 		throw_null(dst_frame = _lua.run(src_frame));
 
 		clock_gettime(CLOCK_REALTIME, & ts_after);
 
-		if(counter >= 1) // TODO
-			sec_per_frame.push_back(ts_after.tv_sec - ts_before.tv_sec + (ts_after.tv_nsec - ts_before.tv_nsec) / 1000000000.0);
+		sec_per_frame.push_back(ts_after.tv_sec - ts_before.tv_sec + (ts_after.tv_nsec - ts_before.tv_nsec) / 1000000000.0);
 
 		dst.write(* dst_frame);
 
 		imshow(src_wname, src_frame);
 		imshow(dst_wname, * dst_frame);
-
-		waitKey(1000 / fps);
-
-		CImage::clear();
-
-		//if(counter > 100) // TODO убрать
-		//	break; // TODO убрать
 	}
+
+	wait_key_and_clear(-1);
 }
 
 void CStat::display_sec_per_frame()
