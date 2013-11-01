@@ -12,7 +12,7 @@ image image_create(const unsigned height, const unsigned width, const unsigned c
 
 	try
 	{
-		throw_null(img = new CImage(height, width, ch_num));
+		throw_null(img = new CImage(height, width, ch_num), "TODO");
 		images.push_back(shared_ptr<CImage>(img));
 		_img = & img->img;
 	}
@@ -27,7 +27,7 @@ image image_create(const unsigned height, const unsigned width, const unsigned c
 
 image image_copy(const Mat & img)
 {
-	throw_if(img.depth() != CV_8U);
+	throw_if(img.depth() != CV_8U, "TODO");
 	
 	image ret = image_create(img.rows, img.cols, img.channels());
 	* (Mat *) ret->mat = img.clone();
@@ -57,7 +57,7 @@ CImage::CImage(const unsigned height, const unsigned width, const unsigned ch_nu
 	img.height = height;
 	img.width = width;
 	img.ch_num = ch_num;
-	throw_null(img.mat = matrix_create(height, width, ch_num, UNSIGNED_INT_8_BIT_ELEMENT));
+	throw_null(img.mat = matrix_create(height, width, ch_num, UNSIGNED_INT_8_BIT_ELEMENT), "TODO");
 }
 
 CImage::~CImage()

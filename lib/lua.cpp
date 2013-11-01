@@ -3,7 +3,7 @@
 
 CLua::CLua()
 {
-	throw_null(state = luaL_newstate());
+	throw_null(state = luaL_newstate(), "TODO");
 	luaL_openlibs(state);
 
 	opencv_register(state); // Регистрация биндингов к OpenCV
@@ -21,17 +21,25 @@ CLua::~CLua()
 	lua_close(state);
 }
 
-void CLua::load_module(const QString module_name)
+QString CLua::load_module(const QString module_fname)
 {
-	const QString fname = CConfig::module_fname(module_name);
 	CModule * p_module;
 
 	for(auto & md : modules)
-		if(md.second->fname() == fname)
-			return;
+		if(md.second->fname() == module_fname)
+			return md.second->name();
 
-	throw_null(p_module = new CModule(fname));
-	modules[p_module->name()] = shared_ptr<CModule>(p_module);
+	throw_null(p_module = new CModule(module_fname), "TODO");
+	const QString module_name = p_module->name();
+	modules[module_name] = shared_ptr<CModule>(p_module);
+
+	return module_name;
+}
+
+void CLua::unload_module(const QString module_name)
+{
+	// TODO
+	printf_TODO("unload_module");
 }
 
 int CLua::run_module(lua_State * state)
@@ -45,7 +53,7 @@ int CLua::run_module(lua_State * state)
 
 void CLua::load_script(const QString fname)
 {
-	throw_if(luaL_dofile(state, fname.toStdString().c_str()) != LUA_OK);
+	throw_if(luaL_dofile(state, fname.toStdString().c_str()) != LUA_OK, "TODO");
 }
 
 Mat * CLua::run(const Mat & src)
@@ -55,7 +63,7 @@ Mat * CLua::run(const Mat & src)
 	lua_getglobal(state, "main");
     lua_pushlightuserdata(state, image_copy(src));
 
-	throw_if(lua_pcall(state, 1, 1, 0) != LUA_OK);
+	throw_if(lua_pcall(state, 1, 1, 0) != LUA_OK, "TODO");
 
 	_dst = CImage::to_Mat((s_image *) lua_touserdata(state, 1));
 	lua_pop(state, 1);

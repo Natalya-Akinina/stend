@@ -23,7 +23,7 @@ int depth_to_met(const int depth)
 		}
 		default:
 		{
-			throw_;
+			throw_("TODO");
 		}
 	}
 
@@ -42,13 +42,13 @@ matrix matrix_create(const unsigned height, const unsigned width, const unsigned
 		{
 			case UNSIGNED_INT_8_BIT_ELEMENT:
 			{
-				throw_null(mtx = new Mat(height, width, CV_8UC(ch_num)));
+				throw_null(mtx = new Mat(height, width, CV_8UC(ch_num)), "TODO");
 
 				break;
 			};
 			case DOUBLE_ELEMENT:
 			{
-				throw_null(mtx = new Mat(height, width, CV_64FC(ch_num)));
+				throw_null(mtx = new Mat(height, width, CV_64FC(ch_num)), "TODO");
 
 				break;
 			};
@@ -73,8 +73,8 @@ matrix matrix_copy(matrix mtx)
 	
 	try
 	{
-		throw_null(mtx);
-		throw_null(_mtx = (Mat *) matrix_create(my_matrix_height(mtx), my_matrix_width(mtx), my_matrix_number_of_channel(mtx), my_matrix_element_type(mtx)));
+		throw_null(mtx, "TODO")
+		throw_null(_mtx = (Mat *) matrix_create(my_matrix_height(mtx), my_matrix_width(mtx), my_matrix_number_of_channel(mtx), my_matrix_element_type(mtx)), "TODO");
 
 		* _mtx = ((Mat *) mtx)->clone();
 	}
@@ -94,8 +94,8 @@ matrix matrix_load_image(const char * fname)
 	{
 		Mat img = imread(fname);
 
-		throw_if(img.empty());
-		throw_null(mtx = (Mat *) matrix_create(img.rows, img.cols, img.channels(), depth_to_met(img.depth())));
+		throw_if(img.empty(), "TODO");
+		throw_null(mtx = (Mat *) matrix_create(img.rows, img.cols, img.channels(), depth_to_met(img.depth())), "TODO");
 
 		* mtx = img.clone();
 	}
@@ -109,7 +109,7 @@ matrix matrix_load_image(const char * fname)
 
 int matrix_save_image(matrix mtx, const char * fname)
 {
-	throw_TODO;
+	throw_TODO("TODO");
 }
 
 int matrix_get_value(matrix mtx, const unsigned row, const unsigned column, const unsigned channel, void * value)
@@ -136,7 +136,7 @@ case type_ind:\
 
 			default:
 			{
-				throw_;
+				throw_("TODO");
 			}
 		}
 	}
@@ -172,7 +172,7 @@ case type_ind:\
 
 			default:
 			{
-				throw_;
+				throw_("TODO");
 			}
 		}
 	}
@@ -187,7 +187,7 @@ case type_ind:\
 #define GET_INFO(fun, my_fun, param)\
 unsigned my_fun(matrix mtx)\
 {\
-	throw_null(mtx);\
+	throw_null(mtx, "TODO");\
 \
 	return ((Mat *) mtx)->param;\
 }\
@@ -198,7 +198,7 @@ int fun(matrix mtx, unsigned * value)\
 \
 	try\
 	{\
-		throw_null(value);\
+		throw_null(value, "TODO");\
 		* value = my_fun(mtx);\
 	}\
 	catch(...)\
@@ -215,7 +215,7 @@ GET_INFO(matrix_number_of_channel, my_matrix_number_of_channel, channels())
 
 int my_matrix_element_type(matrix mtx)
 {
-	throw_null(mtx);
+	throw_null(mtx, "TODO");
 
 	switch(((Mat *) mtx)->depth())
 	{
@@ -225,7 +225,7 @@ int my_matrix_element_type(matrix mtx)
 			return DOUBLE_ELEMENT;
 	}
 
-	throw_;
+	throw_("TODO");
 }
 
 int matrix_element_type(matrix mtx, int * value)
@@ -234,7 +234,7 @@ int matrix_element_type(matrix mtx, int * value)
 
 	try
 	{
-		throw_null(value);
+		throw_null(value, "TODO");
 		* value = my_matrix_element_type(mtx);
 	}
 	catch(...)
@@ -270,7 +270,7 @@ int matrix_pointer_to_data(matrix mtx, void ** ptr)
 
 	try
 	{
-		throw_null(mtx);
+		throw_null(mtx, "TODO");
 
 		* ptr = (void *) ((Mat *) mtx)->data;
 	}

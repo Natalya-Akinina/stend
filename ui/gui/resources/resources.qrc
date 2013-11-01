@@ -1,6 +1,31 @@
+
 <RCC>
+
+	<qresource>
+	
+		<file alias="splash">splash.png</file>
+
+	</qresource>
+
 	<qresource prefix="icons">
+
 		<file alias="logo">icons/logo.png</file>
 		<file alias="about">icons/about.png</file>
+		<file alias="start">icons/start.png</file>
+		<file alias="stop">icons/stop.png</file>
+		<file alias="delete">icons/delete.png</file>
+		<file alias="save">icons/save.png</file>
+
+		<file alias="process">icons/process.png</file>
+		<file alias="process_script">icons/process_script.svg</file>
+		<file alias="process_module">icons/process_module.png</file>
+		<file alias="process_video">icons/process_video.png</file>
+		<file alias="process_src_video">icons/process_src_video.png</file>
+
+		<file alias="stat">icons/stat.png</file>
+		<file alias="stat_full_time">icons/stat_full_time.png</file>
+
 	</qresource>
+
 </RCC>
+

@@ -12,7 +12,7 @@ int main(const int argc, const char * argv[])
 
 	try
 	{
-		throw_if(argc != 5);
+		throw_if(argc != 5, "TODO");
 
 		CConfig::load(argv[1]);
 		CMatrix::init();
@@ -21,7 +21,8 @@ int main(const int argc, const char * argv[])
 		CLua lua;
 		CStat stat(lua);
 
-		lua.load_module("demo_image");
+		lua.load_module("/home/amv/disser/project/super_stend/src/modules/build/libdemo_image.so");
+		// lua.load_module("demo_image");
 		// lua.load_module("demo_matrix");
 
 		lua.load_script(argv[2]);
@@ -40,5 +41,11 @@ int main(const int argc, const char * argv[])
 	CImage::destroy();
 
 	return ret;
+}
+
+void error_message(const char * msg)
+{
+	if(msg != NULL)
+		fprintf(stderr, "[Error message] %s\n", msg);
 }
 

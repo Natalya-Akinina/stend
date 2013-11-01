@@ -19,8 +19,9 @@ class CLua
 
 		CLua();
 		~CLua();
-
-        void load_module(const QString module_name);
+		
+		QString load_module(const QString module_fname);
+        void unload_module(const QString module_name);
 		static int run_module(lua_State * state);
 		void load_script(const QString fname);
 		Mat * run(const Mat & src);

@@ -41,7 +41,7 @@ void * alloc(const unsigned type_size, const unsigned dim, ...)
 
 	try
 	{
-		throw_null(dim_size = (unsigned *) alloca(dim * sizeof(unsigned)));
+		throw_null(dim_size = (unsigned *) alloca(dim * sizeof(unsigned)), "TODO");
 
 		va_start(val, dim);
 
@@ -53,7 +53,7 @@ void * alloc(const unsigned type_size, const unsigned dim, ...)
 
 		va_end(val);
 
-		throw_null(mem = malloc(size));
+		throw_null(mem = malloc(size), "TODO");
 
 		for(u = 0, num = 1, dof = (char *) mem; u < dim_1; u++)
 		{

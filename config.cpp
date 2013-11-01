@@ -11,7 +11,7 @@ void CConfig::load(const QString fname)
 	QXmlStreamReader stream;
 	QFile fl(fname);
 
-	throw_if(! fl.open(QIODevice::ReadOnly | QIODevice::Text));
+	throw_if(! fl.open(QIODevice::ReadOnly | QIODevice::Text), "TODO");
 	stream.setDevice(& fl);
 
 	while(stream.readNextStartElement())

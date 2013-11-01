@@ -7,18 +7,18 @@ CModule::CModule(const QString fname)
 	char buf[buf_size];
 
 	library.setFileName(fname);
-	throw_if(! library.load());
+	throw_if(! library.load(), "TODO");
 
 	// ############################################################################ 
 	// Функции
 
-	throw_null(_init = (init_function) resolve("init"));
-	throw_null(_destroy = (destroy_function) resolve("destroy"));
-	throw_null(_get_name = (get_name_function) resolve("get_name"));
-	throw_null(_get_type = (get_type_function) resolve("get_type"));
-	throw_null(_get_value = (get_value_function) resolve("get_value"));
-	throw_null(_set_value = (set_value_function) resolve("set_value"));
-	throw_null(_run = (run_function) resolve("run"));
+	throw_null(_init = (init_function) resolve("init"), "TODO");
+	throw_null(_destroy = (destroy_function) resolve("destroy"), "TODO");
+	throw_null(_get_name = (get_name_function) resolve("get_name"), "TODO");
+	throw_null(_get_type = (get_type_function) resolve("get_type"), "TODO");
+	throw_null(_get_value = (get_value_function) resolve("get_value"), "TODO");
+	throw_null(_set_value = (set_value_function) resolve("set_value"), "TODO");
+	throw_null(_run = (run_function) resolve("run"), "TODO");
 
 	// ############################################################################ 
 	// Переменные
@@ -27,7 +27,7 @@ CModule::CModule(const QString fname)
 {\
 	typedef type;\
 	fun_type ptr;\
-	throw_null(ptr = (fun_type) resolve(var_name));\
+	throw_null(ptr = (fun_type) resolve(var_name), "TODO");\
 	* ptr = & fun_name;\
 }
 
@@ -48,7 +48,7 @@ CModule::CModule(const QString fname)
 	
 	// ############################################################################ 
 
-	throw_if((* _init)(buf, buf_size, & param_num, & return_value_num));
+	throw_if((* _init)(buf, buf_size, & param_num, & return_value_num), "TODO");
 	_name = buf;
 
 	load_elem(true, param_num);
@@ -57,7 +57,7 @@ CModule::CModule(const QString fname)
 
 CModule::~CModule()
 {
-	throw_if((* _destroy)());
+	throw_if((* _destroy)(), "TODO");
 }
 
 QFunctionPointer CModule::resolve(const QString name)
@@ -70,7 +70,7 @@ QFunctionPointer CModule::resolve(const QString name)
 	if(ptr == NULL)
 		ptr = library.resolve((QString("_") + name).toLocal8Bit());
 
-	throw_null(ptr);
+	throw_null(ptr, "TODO");
 
 	return ptr;
 }
@@ -84,8 +84,8 @@ void CModule::load_elem(const bool is_param, const unsigned num)
 
 	for(v = 0; v < num; v++)
 	{
-		throw_if((* _get_name)(is_param, v, buf, buf_size));
-		throw_if((* _get_type)(is_param, v, & type));
+		throw_if((* _get_name)(is_param, v, buf, buf_size), "TODO");
+		throw_if((* _get_type)(is_param, v, & type), "TODO");
 
 		array.push_back(t_elem(buf, type));
 	}
@@ -122,7 +122,7 @@ case MY_TYPE:\
 		v++;
 	}
 
-	throw_if((* _run)());
+	throw_if((* _run)(), "TODO");
 
 	v = 0;
 

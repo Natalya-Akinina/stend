@@ -14,6 +14,12 @@
 #include <QDialog>
 #include <QMessageBox>
 #include <QXmlStreamReader>
+#include <QMenu>
+#include <QToolButton>
+#include <QSplashScreen>
+#include <QtTest>
+#include <QFileDialog>
+#include <QSyntaxHighlighter>
 #include <lua.hpp>
 #include <opencv2/opencv.hpp>
 
@@ -23,26 +29,29 @@ using namespace cv;
 // ############################################################################
 // Исключения
 
-#define throw_ \
+void error_message(const char * msg);
+
+#define throw_(msg) \
 {\
 	fprintf(stderr, "[Exception] File %s, line %d\n", __FILE__, __LINE__);\
+	error_message(msg);\
 	throw 1;\
 };
 
-#define throw_TODO \
+#define throw_TODO(msg) \
 {\
 	fprintf(stderr, "TODO ");\
-	throw_;\
+	throw_(msg);\
 };
 
-#define throw_if(condition) \
+#define throw_if(condition, msg) \
 {\
 	if((condition))\
-		throw_;\
+		throw_(msg);\
 }
 
-#define throw_null(pointer) \
-	throw_if((pointer) == NULL)
+#define throw_null(pointer, msg) \
+	throw_if((pointer) == NULL, msg)
 
 // ############################################################################
 // Отладочная печать

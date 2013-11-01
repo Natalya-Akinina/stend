@@ -15,11 +15,11 @@ void CStat::run(const QString src_fname, const QString dst_fname)
 	Mat src_frame, * dst_frame;
 	VideoCapture src(src_fname.toStdString());
 
-	throw_if(! src.isOpened());
+	throw_if(! src.isOpened(), "TODO");
 
 	const double fps = src.get(CV_CAP_PROP_FPS);
 	VideoWriter dst(dst_fname.toStdString(), CV_FOURCC_DEFAULT, fps, Size(src.get(CV_CAP_PROP_FRAME_WIDTH), src.get(CV_CAP_PROP_FRAME_HEIGHT))); // TODO Не работает
-	throw_if(! dst.isOpened());
+	throw_if(! dst.isOpened(), "TODO");
 
 	namedWindow(src_wname, CV_WINDOW_NORMAL);
 	namedWindow(dst_wname, CV_WINDOW_NORMAL);
@@ -40,7 +40,7 @@ void CStat::run(const QString src_fname, const QString dst_fname)
 
 		clock_gettime(CLOCK_REALTIME, & ts_before);
 
-		throw_null(dst_frame = _lua.run(src_frame));
+		throw_null(dst_frame = _lua.run(src_frame), "TODO");
 
 		clock_gettime(CLOCK_REALTIME, & ts_after);
 
@@ -78,7 +78,7 @@ void CStat::save_sec_per_frame(const QString fname)
 	QTextStream stream;
 	QFile fl(fname);
 
-	throw_if(! fl.open(QIODevice::WriteOnly | QIODevice::Text));
+	throw_if(! fl.open(QIODevice::WriteOnly | QIODevice::Text), "TODO");
 	stream.setDevice(& fl);
 
 	stream.setRealNumberPrecision(11);

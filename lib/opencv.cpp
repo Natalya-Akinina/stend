@@ -26,9 +26,9 @@ int lua_threshold(lua_State * state)
 		thr = lua_tonumber(state, 2);
 		type = lua_tonumber(state, 3);
 		
-		throw_if(thr > 255);
+		throw_if(thr > 255, "TODO");
 
-		throw_null(dst_img = image_copy(* src));
+		throw_null(dst_img = image_copy(* src), "TODO");
 		dst = CImage::to_Mat(dst_img);
 
 		switch(type)
@@ -76,12 +76,12 @@ int lua_split(lua_State * state)
 		size = ch.size();
 		ret = size;
 
-		throw_null(_ch_img = new image[size]);
-		throw_null(_ch = new Mat *[size]);
+		throw_null(_ch_img = new image[size], "TODO");
+		throw_null(_ch = new Mat *[size], "TODO");
 
 		for(v = 0; v < size; v++)
 		{
-			throw_null(_ch_img[v] = image_copy(ch[v]));
+			throw_null(_ch_img[v] = image_copy(ch[v]), "TODO");
 			_ch[v] = CImage::to_Mat(_ch_img[v]);
 		}
 
@@ -119,7 +119,7 @@ int lua_merge(lua_State * state)
 	    Mat * ch_2 = CImage::to_Mat((s_image *) lua_touserdata(state, 2));
 		Mat * ch_3 = CImage::to_Mat((s_image *) lua_touserdata(state, 3));
 
-		throw_null(dst_img = image_create(ch_1->rows, ch_1->cols, 3));
+		throw_null(dst_img = image_create(ch_1->rows, ch_1->cols, 3), "TODO");
 		dst = CImage::to_Mat(dst_img);
 
 		ch.push_back(* ch_1);
@@ -152,7 +152,7 @@ int lua_bitwise_and(lua_State * state)
 	    Mat * op_1 = CImage::to_Mat((s_image *) lua_touserdata(state, 1));
 		Mat * op_2 = CImage::to_Mat((s_image *) lua_touserdata(state, 2));
 
-		throw_null(dst_img = image_create(op_1->rows, op_1->cols, op_1->channels()));
+		throw_null(dst_img = image_create(op_1->rows, op_1->cols, op_1->channels()), "TODO");
 		dst = CImage::to_Mat(dst_img);
 
 		bitwise_and(* op_1, * op_2, * dst);
