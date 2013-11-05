@@ -15,15 +15,21 @@
 		<file alias="stop">icons/stop.png</file>
 		<file alias="delete">icons/delete.png</file>
 		<file alias="save">icons/save.png</file>
+		<file alias="yes">icons/yes.png</file>
 
 		<file alias="process">icons/process.png</file>
-		<file alias="process_script">icons/process_script.svg</file>
-		<file alias="process_module">icons/process_module.png</file>
-		<file alias="process_video">icons/process_video.png</file>
-		<file alias="process_src_video">icons/process_src_video.png</file>
+		<file alias="script">icons/script.png</file>
+		<file alias="module">icons/module.png</file>
+		<file alias="video">icons/video.png</file>
+		<file alias="src_video">icons/src_video.png</file>
+
+		<file alias="window">icons/window.png</file>
+		<file alias="foreground">icons/foreground.png</file>
+		<file alias="cascade">icons/cascade.png</file>
+		<file alias="tile">icons/tile.png</file>
 
 		<file alias="stat">icons/stat.png</file>
-		<file alias="stat_full_time">icons/stat_full_time.png</file>
+		<file alias="stat_sec_per_frame">icons/stat_sec_per_frame.png</file>
 
 	</qresource>
 

@@ -20,6 +20,10 @@
 #include <QtTest>
 #include <QFileDialog>
 #include <QSyntaxHighlighter>
+#include <QListWidget>
+#include <QTextBrowser>
+#include <QMdiSubWindow>
+#include <QLabel>
 #include <lua.hpp>
 #include <opencv2/opencv.hpp>
 

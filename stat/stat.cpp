@@ -1,89 +1,76 @@
 
 #include "stat/stat.hpp"
 
-CStat::CStat(CLua & lua) :
-	_lua(lua)
+CStat::CStat()
 {
 	;
 }
 
-void CStat::run(const QString src_fname, const QString dst_fname)
+CStat::~CStat()
 {
-	unsigned counter;
-	const string src_wname = "Source", dst_wname = "Result";
-	struct timespec ts_before, ts_after;
-	Mat src_frame, * dst_frame;
-	VideoCapture src(src_fname.toStdString());
+	;
+}
 
-	throw_if(! src.isOpened(), "TODO");
+// ############################################################################ 
+// Секунд на кадр
 
-	const double fps = src.get(CV_CAP_PROP_FPS);
-	VideoWriter dst(dst_fname.toStdString(), CV_FOURCC_DEFAULT, fps, Size(src.get(CV_CAP_PROP_FRAME_WIDTH), src.get(CV_CAP_PROP_FRAME_HEIGHT))); // TODO Не работает
-	throw_if(! dst.isOpened(), "TODO");
+CSecPerFrameStat::CSecPerFrameStat() :
+	CStat()
+{
+	;
+}
 
-	namedWindow(src_wname, CV_WINDOW_NORMAL);
-	namedWindow(dst_wname, CV_WINDOW_NORMAL);
+CSecPerFrameStat::~CSecPerFrameStat()
+{
+	;
+}
 
-	sec_per_frame.clear();
+void CSecPerFrameStat::init()
+{
+	values.clear();
+}
 
-	auto wait_key_and_clear = [] (int ms)
+void CSecPerFrameStat::operator()(const double value)
+{
+	if(measure)
+		values.push_back(value);
+}
+
+void CSecPerFrameStat::display()
+{
+	if(measure)
 	{
-		waitKey(ms);
+		QProcess process;
+		QStringList args;
+		const char * fname = tmpnam(NULL);
+
+		save(fname);
+
+		args << CConfig::R_script_fname("sec_per_frame") << fname;
+
+		process.start("Rscript", args);
+		process.waitForFinished();
 	
-		CImage::clear();
-	};
-
-	for(counter = 0; src.read(src_frame); counter++)
-	{
-		if(counter)
-			wait_key_and_clear(1000 / fps);
-
-		clock_gettime(CLOCK_REALTIME, & ts_before);
-
-		throw_null(dst_frame = _lua.run(src_frame), "TODO");
-
-		clock_gettime(CLOCK_REALTIME, & ts_after);
-
-		sec_per_frame.push_back(ts_after.tv_sec - ts_before.tv_sec + (ts_after.tv_nsec - ts_before.tv_nsec) / 1000000000.0);
-
-		dst.write(* dst_frame);
-
-		imshow(src_wname, src_frame);
-		imshow(dst_wname, * dst_frame);
+		remove(fname);
 	}
-
-	wait_key_and_clear(-1);
 }
 
-void CStat::display_sec_per_frame()
+void CSecPerFrameStat::save(const QString fname)
 {
-	QProcess process;
-	QStringList args;
-	const char * fname = tmpnam(NULL);
+	if(measure)
+	{
+		const unsigned frame_num = values.size();
+		unsigned v;
+		QTextStream stream;
+		QFile fl(fname);
 
-	save_sec_per_frame(fname);
+		throw_if(! fl.open(QIODevice::WriteOnly | QIODevice::Text), "TODO");
+		stream.setDevice(& fl);
 
-	args << CConfig::R_script_fname("sec_per_frame") << fname;
+		stream.setRealNumberPrecision(11);
 
-	process.start("Rscript", args);
-	process.waitForFinished();
-
-	remove(fname);
-}
-
-void CStat::save_sec_per_frame(const QString fname)
-{
-	const unsigned frame_num = sec_per_frame.size();
-	unsigned v;
-	QTextStream stream;
-	QFile fl(fname);
-
-	throw_if(! fl.open(QIODevice::WriteOnly | QIODevice::Text), "TODO");
-	stream.setDevice(& fl);
-
-	stream.setRealNumberPrecision(11);
-
-	for(v = 0; v < frame_num; v++)
-		stream << v << "\t" << sec_per_frame[v] << endl;
+		for(v = 0; v < frame_num; v++)
+			stream << v << "\t" << values[v] << endl;
+	}
 }
 

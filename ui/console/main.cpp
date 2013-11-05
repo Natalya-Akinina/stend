@@ -4,7 +4,7 @@
 #include "lib/module.hpp"
 #include "lib/matrix.hpp"
 #include "lib/image.hpp"
-#include "stat/stat.hpp"
+#include "main_loop/main_loop.hpp"
 
 int main(const int argc, const char * argv[])
 {
@@ -19,7 +19,9 @@ int main(const int argc, const char * argv[])
 		CImage::init();
 
 		CLua lua;
-		CStat stat(lua);
+		CMainLoop main_loop(lua);
+
+		main_loop.sec_per_frame.measure = true;
 
 		lua.load_module("/home/amv/disser/project/super_stend/src/modules/build/libdemo_image.so");
 		// lua.load_module("demo_image");
@@ -27,10 +29,10 @@ int main(const int argc, const char * argv[])
 
 		lua.load_script(argv[2]);
 
-		stat.run(argv[3], argv[4]);
+		main_loop(argv[3], argv[4]);
 
-		// stat.save_sec_per_frame("../../trash/sec_per_frame");
-		stat.display_sec_per_frame();
+		main_loop.sec_per_frame.display();
+		// main_loop.sec_per_frame.save("/home/amv/trash/sec_per_frame");
 	}
 	catch(...)
 	{
@@ -47,5 +49,10 @@ void error_message(const char * msg)
 {
 	if(msg != NULL)
 		fprintf(stderr, "[Error message] %s\n", msg);
+}
+
+CDisplay * CDisplay::create(const unsigned fps)
+{
+	return new COpenCVDisplay(fps);
 }
 

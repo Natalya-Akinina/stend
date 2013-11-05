@@ -31,10 +31,12 @@ endif()
 
 set(sources_lib lib/lua.cpp lib/opencv.cpp lib/module.cpp lib/matrix.cpp lib/image.cpp)
 set(sources_stat stat/stat.cpp)
-set(sources ${sources_lib} ${sources_stat} config.cpp various.cpp)
+set(sources_display display/display.cpp)
+set(sources_main_loop main_loop/main_loop.cpp)
+set(sources ${sources_lib} ${sources_stat} ${sources_display} ${sources_main_loop} config.cpp various.cpp)
 
 add_library(stend SHARED ${sources})
-qt5_use_modules(stend Core Test)
+qt5_use_modules(stend Core Test Widgets)
 target_link_libraries(stend ${OpenCV_LIBS} ${PC_LUA_LIBRARIES})
 
 ############################################################################
@@ -48,6 +50,6 @@ qt5_wrap_ui(dialogs ui/gui/resources/dialogs/main_window.ui ui/gui/resources/dia
 qt5_add_resources(resources ui/gui/resources/resources.qrc)
 set(sources_gui ${dialogs} ${resources} ui/gui/main.cpp ui/gui/ui/main_window.cpp ui/gui/ui/about_dialog.cpp ui/gui/ui/lua_highlighter.cpp)
 add_executable(gui ${sources_gui})
-qt5_use_modules(gui Core Widgets Test)
+qt5_use_modules(gui Core Test Widgets)
 target_link_libraries(gui stend)
 

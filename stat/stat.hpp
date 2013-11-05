@@ -4,22 +4,34 @@
 
 #include "all.hpp"
 #include "config.hpp"
-#include "lib/lua.hpp"
-#include "lib/image.hpp"
 
 class CStat
 {
-	CLua & _lua;
-	vector<double> sec_per_frame;
+	public:
+
+		bool measure = false;
+
+		CStat();
+		virtual ~CStat();
+
+		virtual void init() = 0;
+		virtual void display() = 0;
+		virtual void save(const QString fname) = 0;
+};
+
+class CSecPerFrameStat : public CStat
+{
+	vector<double> values;
 
 	public:
 
-		CStat(CLua & lua);
+		CSecPerFrameStat();
+		~CSecPerFrameStat();
 
-		void run(const QString src_fname, const QString dst_fname);
-
-		void display_sec_per_frame();
-		void save_sec_per_frame(const QString fname);
+		void init();
+		void operator()(const double value);
+		void display();
+		void save(const QString fname);
 };
 
 #endif

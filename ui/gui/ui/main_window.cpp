@@ -1,38 +1,86 @@
 
 #include "ui/gui/ui/main_window.hpp"
 
+// TODO Сохранение результатов в файл
+
 CMainWindow::CMainWindow() :
-	QMainWindow(NULL), stat(lua)
+	QMainWindow(NULL), script_view(this), modules_list(this), src_video_view(this), dst_video_view(this), main_loop(lua)
 {
 	setupUi(this);
 
 	// ############################################################################ 
+	// Настройка виджетов
+
+	modules_list.setEditTriggers(QAbstractItemView::NoEditTriggers);
+	modules_list.setSelectionMode(QAbstractItemView::SingleSelection);
+	modules_list.setContextMenuPolicy(Qt::CustomContextMenu);
+	connect(& modules_list, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(modules_list_context_menu(const QPoint &)));
+
+	const auto flags = Qt::Window | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowShadeButtonHint;
+	const auto video_flags = Qt::SubWindow | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowShadeButtonHint;
+
+	auto setup_window = [ this ](QMdiSubWindow *& window, QWidget * widget, const QString window_title, const QString icon_name, const QSize size, const QFlags<Qt::WindowType> flags)
+	{
+		window = mdi_area->addSubWindow(widget, flags);
+		window->setWindowTitle(window_title);
+		window->setWindowIcon(QIcon(icon_name)); // TODO Из-за флагов иконка не отображается
+		window->resize(size);
+		window->setAttribute(Qt::WA_DeleteOnClose, false);
+		window->setSystemMenu(NULL);
+	};
+
+	setup_window(script_window, & script_view, script_window_title, ":/icons/script", QSize(600, 600), flags);
+	setup_window(modules_list_window, & modules_list, modules_list_window_title, ":/icons/module", QSize(200, 400), flags);
+	setup_window(src_video_window, & src_video_view, src_video_window_title, ":/icons/src_video", QSize(400, 400), video_flags);
+	setup_window(dst_video_window, & dst_video_view, dst_video_window_title, ":/icons/save", QSize(400, 400), video_flags);
+
+	modules_list_window->setStatusTip(modules_list_window_title);
+
+	// ############################################################################ 
 	// Загрузка и сохранение
 
-	process_video_menu.setTitle(trUtf8("Видео"));
-	process_video_menu.setIcon(QIcon(":/icons/process_video"));
-	process_src_video_action = process_video_menu.addAction(QIcon(":/icons/process_src_video"), "", this, SLOT(process_src_video())); // TODO
-	process_dst_video_action = process_video_menu.addAction(QIcon(":/icons/save"), "", this, SLOT(process_dst_video()));
+	video_menu.setTitle(trUtf8("Видео"));
+	video_menu.setIcon(QIcon(":/icons/video"));
+	src_video_action = video_menu.addAction(QIcon(":/icons/src_video"), trUtf8("Загрузить исходное видео"), this, SLOT(process_src_video()));
+	dst_video_action = video_menu.addAction(QIcon(":/icons/save"), trUtf8("Сохранить результирующее видео"), this, SLOT(process_dst_video()));
 
-	process_script_action = process_menu.addAction(QIcon(":/icons/process_script"), "", this, SLOT(process_lua()));
-	process_menu.addAction(QIcon(":/icons/process_module"), trUtf8("Загрузить модуль"), this, SLOT(process_module()));
-	process_menu.addMenu(& process_video_menu);
+	script_action = process_menu.addAction(QIcon(":/icons/script"), trUtf8("Загрузить Lua - скрипт"), this, SLOT(process_script()));
+	process_menu.addAction(QIcon(":/icons/module"), trUtf8("Загрузить модуль"), this, SLOT(process_module()));
+	process_menu.addMenu(& video_menu);
+
+	// ############################################################################ 
+	// Организация окон
+
+	foreground_menu.setTitle(trUtf8("На передний план"));
+	foreground_menu.setIcon(QIcon(":/icons/foreground"));
+	foreground_menu.addAction(QIcon(":/icons/script"), script_window_title, this, SLOT(foreground_script_window()));
+	foreground_menu.addAction(QIcon(":/icons/module"), modules_list_window_title, this, SLOT(foreground_modules_list_window()));
+	foreground_menu.addAction(QIcon(":/icons/src_video"), src_video_window_title, this, SLOT(foreground_src_video_window()));
+	foreground_menu.addAction(QIcon(":/icons/dst_video"), dst_video_window_title, this, SLOT(foreground_dst_video_window()));
+
+	window_menu.addMenu(& foreground_menu);
+	window_menu.addAction(QIcon(":/icons/cascade"), trUtf8("Каскадом"), mdi_area, SLOT(cascadeSubWindows()));
+	window_menu.addAction(QIcon(":/icons/tile"), trUtf8("Равномерно распределить"), mdi_area, SLOT(tileSubWindows()));
 
 	// ############################################################################ 
 	// Статистика
 
-	stat_menu.addAction(QIcon(":/icons/stat_full_time"), trUtf8("Время выполнения алгоритма на кадре"), this, SLOT(stat_full_time(bool)))->setCheckable(true);
+	stat_menu.addAction(QIcon(":/icons/stat_sec_per_frame"), trUtf8("Время выполнения алгоритма на кадре"), this, SLOT(stat_sec_per_frame(bool)))->setCheckable(true);
 
 	// ############################################################################ 
 
 	auto add_action = [ this ](const QString title, const QString icon_name, const char * fun_name)
 	{
-		tool_bar->addAction(QIcon(icon_name), title, this, fun_name)->setToolTip(title);
+		QAction * action = tool_bar->addAction(QIcon(icon_name), title, this, fun_name);
+		
+		action->setToolTip(title);
+		action->setStatusTip(title);
 	};
 
 	auto add_button = [ this ](QToolButton & button, QMenu & menu, const QString title, const QString icon_name)
 	{
 		button.setToolTip(title);
+		button.setStatusTip(title);
 		button.setIcon(QIcon(icon_name));
 		button.setMenu(& menu);
 		button.setPopupMode(QToolButton::InstantPopup);
@@ -41,6 +89,7 @@ CMainWindow::CMainWindow() :
 	};
 
 	add_button(process_button, process_menu, trUtf8("Загрузка и сохранение"), ":/icons/process");
+	add_button(window_button, window_menu, trUtf8("Управление окнами"), ":/icons/window");
 	add_button(stat_button, stat_menu, trUtf8("Статистика"), ":/icons/stat");
 	toggle_experiment_action = tool_bar->addAction("", this, SLOT(toggle_experiment()));
 	add_action(trUtf8("О программе"), ":/icons/about", SLOT(about()));
@@ -48,6 +97,7 @@ CMainWindow::CMainWindow() :
 	// ############################################################################ 
 
 	unload_script();
+	modules_list.clear();
 	unload_src_video();
 	unset_dst_video();
 }
@@ -61,17 +111,23 @@ void CMainWindow::start_experiment()
 	{
 		if(! is_experiment_run)
 		{
+			const QString tip = trUtf8("Останов эксперимента");
+
+			toggle_experiment_action->setIcon(QIcon(":/icons/stop"));
+			toggle_experiment_action->setToolTip(tip);
+			toggle_experiment_action->setStatusTip(tip);
+
+			main_loop.sec_per_frame.measure = toggle_experiment_action->isChecked();
+
+			is_experiment_run = true;
+
+			// ############################################################################ 
+
 			lua.load_script(script_fname);
-
+			main_loop(src_video_fname, dst_video_fname);
+			
 			// TODO
-			// stat.run(argv[3], argv[4]);
-			// stat.display_sec_per_frame();
 		}
-		
-		is_experiment_run = true;
-
-		toggle_experiment_action->setIcon(QIcon(":/icons/stop"));
-		toggle_experiment_action->setToolTip(trUtf8("Останов эксперимента"));
 	}
 	catch(...)
 	{
@@ -83,57 +139,104 @@ void CMainWindow::stop_experiment()
 {
 	if(is_experiment_run)
 	{
-		// TODO
-		;
+		main_loop.sec_per_frame.display(); // TODO Отладить
 	}
 
-	is_experiment_run = false;
+	const QString tip = trUtf8("Запуск эксперимента");
 
 	toggle_experiment_action->setIcon(QIcon(":/icons/start"));
-	toggle_experiment_action->setToolTip(trUtf8("Запуск эксперимента"));
+	toggle_experiment_action->setToolTip(tip);
+	toggle_experiment_action->setStatusTip(tip);
 	toggle_experiment_action->setEnabled(! (script_fname.isEmpty() || src_video_fname.isEmpty() || dst_video_fname.isEmpty()));
+
+	is_experiment_run = false;
 }
 
-void CMainWindow::load_script(const QString __script_fname)
-{
-	try
-	{
-		throw_if(__script_fname.isEmpty(), NULL)
+// ############################################################################ 
+// Окна на передний план
 
-		QFile fl(__script_fname);
-
-		throw_if(! fl.open(QIODevice::ReadOnly | QIODevice::Text), "Невозможно открыть файл");
-
-		lua_script.setPlainText(fl.readAll());
-		lua_script_highlighter.setDocument(& lua_script);
-		lua_script_view->setDocument(& lua_script);
-		lua_script_view->setTabStopWidth(10);
-
-		process_script_action->setText(script_action_text_prefix + trUtf8(" - ") + __script_fname);
-		script_fname = __script_fname;
-
-		stop_experiment();
-	}
-	catch(...)
-	{
-		unload_script();
-	}
+#define FOREGROUND(fun, window)\
+void CMainWindow::fun()\
+{\
+	mdi_area->setActiveSubWindow(window);\
 }
 
-void CMainWindow::unload_script()
-{
-	process_script_action->setText(script_action_text_prefix);
-	lua_script_view->clear();
+FOREGROUND(foreground_script_window, script_window)
+FOREGROUND(foreground_modules_list_window, modules_list_window)
+FOREGROUND(foreground_src_video_window, src_video_window)
+FOREGROUND(foreground_dst_video_window, dst_video_window)
 
-	stop_experiment();
+// ############################################################################ 
+// Загрузка, установ, выгрузка и сброс
+
+#define LOAD_SET(fun, unload_fun, fname, window, window_title, code)\
+void CMainWindow::fun(const QString __fname)\
+{\
+	try\
+	{\
+		code;\
+\
+		window->setStatusTip(__fname);\
+		fname = __fname;\
+\
+		stop_experiment();\
+	}\
+	catch(...)\
+	{\
+		unload_fun();\
+	}\
 }
+
+#define UNLOAD_UNSET(fun, fname, window, content, window_title)\
+void CMainWindow::fun()\
+{\
+	window->setStatusTip(window_title);\
+	fname.clear();\
+	content.clear();\
+\
+	stop_experiment();\
+}
+
+LOAD_SET(load_script, unload_script, script_fname, script_window, script_window_title,
+	QFile fl(__fname);
+	throw_if(! fl.open(QIODevice::ReadOnly | QIODevice::Text), "Невозможно открыть файл");
+
+	script_document.setPlainText(fl.readAll());
+	script_highlighter.setDocument(& script_document);
+	script_view.setDocument(& script_document);
+	script_view.setTabStopWidth(10);
+);
+
+LOAD_SET(load_src_video, unload_src_video, src_video_fname, src_video_window, src_video_window_title,
+	Mat frame;
+	VideoCapture video(__fname.toStdString());
+
+	throw_if(! video.isOpened(), "Не удалось открыть файл с исходной видеопоследовательностью");
+	video.set(CV_CAP_PROP_POS_FRAMES, video.get(CV_CAP_PROP_FRAME_COUNT / 2));
+	throw_if(! video.read(frame), "Не удалось прочитать файл с исходной видеопоследовательностью");
+	CQt5Display::display(src_video_window, frame);
+);
+
+LOAD_SET(set_dst_video, unset_dst_video, dst_video_fname, dst_video_window, dst_video_window_title,
+	const QPixmap img = QPixmap(":/icons/yes");
+	const QSize size = img.size();
+
+	dst_video_view.setPixmap(img);
+	dst_video_window->resize(size);
+	dst_video_window->setMaximumSize(size);
+);
+
+
+UNLOAD_UNSET(unload_script, script_fname, script_window, script_view, script_window_title)
+UNLOAD_UNSET(unload_src_video, src_video_fname, src_video_window, src_video_view, src_video_window_title)
+UNLOAD_UNSET(unset_dst_video, dst_video_fname, dst_video_window, dst_video_view, dst_video_window_title)
 
 void CMainWindow::load_module(const QString module_fname)
 {
 	const QString module_name = lua.load_module(module_fname);
 
-	if(modules_list->findItems(module_name, Qt::MatchExactly).size() == 0)
-		modules_list->addItem(module_name);
+	if(! modules_list.findItems(module_name, Qt::MatchExactly).size())
+		modules_list.addItem(module_name);
 }
 
 void CMainWindow::unload_module(QListWidgetItem * current_item)
@@ -142,64 +245,55 @@ void CMainWindow::unload_module(QListWidgetItem * current_item)
 	delete current_item;
 }
 
-void CMainWindow::load_src_video(const QString video_fname)
+// ############################################################################ 
+// Слоты - загрузка и выгрузка исходных данных
+
+#define PROCESS(msg, suffix, fun, load_fun, open_save_fun)\
+void CMainWindow::fun()\
+{\
+	try\
+	{\
+		const QString fname = QFileDialog::open_save_fun(this, trUtf8(msg), "", trUtf8(suffix));\
+\
+		if(! fname.isEmpty())\
+			load_fun(fname);\
+	}\
+	catch(...)\
+	{\
+		;\
+	}\
+}
+
+PROCESS("Загрузить Lua-скрипт", "Lua-скрипт (*.lua)", process_script, load_script, getOpenFileName)
+PROCESS("Загрузить модуль", "Модуль (*.so *.dll)", process_module, load_module, getOpenFileName)
+PROCESS("Загрузить исходную видеопоследовательность", "Видео (*.avi *.mpg *.mp4);;Кадр (*.bmp *.jpg *.png *.tiff)", process_src_video, load_src_video, getOpenFileName) // TODO Более полное перечисление расширений
+PROCESS("Сохранить результирующую видеопоследовательность", "Видео (*.avi *.mpg *.mp4);;Кадр (*.bmp *.jpg *.png *.tiff)", process_dst_video, set_dst_video, getSaveFileName) // TODO Более полное перечисление расширений + автодобавление расширения, если его нет 
+
+void CMainWindow::modules_list_context_menu(const QPoint & pos)
 {
 	try
 	{
-		throw_if(video_fname.isEmpty(), NULL)
+		QListWidgetItem * current_item = modules_list.currentItem();
 
-		// TODO
+		if(current_item != NULL && current_item->isSelected())
+		{
+			QMenu context_menu;
+			QAction * delete_action = context_menu.addAction(QIcon(":/icons/delete"), trUtf8("Выгрузить модуль"));
 
-		process_src_video_action->setText(src_video_action_text_prefix + trUtf8(" - ") + video_fname);
-		src_video_fname = video_fname;
-
-		stop_experiment();
+			if(delete_action == context_menu.exec(modules_list.mapToGlobal(pos)))
+				unload_module(current_item);
+		}
 	}
 	catch(...)
 	{
-		unload_src_video();
+		;
 	}
-}
-
-void CMainWindow::unload_src_video()
-{
-	process_src_video_action->setText(src_video_action_text_prefix);
-
-	// TODO
-
-	stop_experiment();
-}
-
-void CMainWindow::set_dst_video(const QString video_fname)
-{
-	try
-	{
-		throw_if(video_fname.isEmpty(), NULL)
-
-		// TODO
-
-		process_dst_video_action->setText(dst_video_action_text_prefix + trUtf8(" - ") + video_fname);
-		dst_video_fname = video_fname;
-
-		stop_experiment();
-	}
-	catch(...)
-	{
-		unset_dst_video();
-	}
-}
-
-void CMainWindow::unset_dst_video()
-{
-	process_dst_video_action->setText(dst_video_action_text_prefix);
-
-	// TODO
 
 	stop_experiment();
 }
 
 // ############################################################################ 
-// Слоты
+// Прочие слоты
 
 void CMainWindow::about()
 {
@@ -213,78 +307,6 @@ void CMainWindow::about()
 	}
 }
 
-// ############################################################################ 
-// Слоты - загрузка и выгрузка исходных данных
-
-void CMainWindow::process_lua()
-{
-	try
-	{
-		load_script(
-				QFileDialog::getOpenFileName(this, trUtf8("Загрузить Lua-скрипт"), "", trUtf8("Lua-скрипт (*.lua)"))
-				);
-	}
-	catch(...)
-	{
-		;
-	}
-}
-
-void CMainWindow::process_module()
-{
-	try
-	{
-		const QString fname = QFileDialog::getOpenFileName(this, trUtf8("Загрузить модуль"), "", trUtf8("Модуль (*.so *.dll)"));
-
-		throw_if(fname.isEmpty(), NULL);
-		load_module(fname);
-	}
-	catch(...)
-	{
-		;
-	}
-
-	stop_experiment();
-}
-
-void CMainWindow::on_modules_list_customContextMenuRequested(const QPoint & pos)
-{
-	try
-	{
-		QListWidgetItem * current_item = modules_list->currentItem();
-
-		if(current_item != NULL && current_item->isSelected())
-		{
-			QMenu context_menu;
-			QAction * delete_action = context_menu.addAction(QIcon(":/icons/delete"), trUtf8("Выгрузить модуль"));
-
-			if(delete_action == context_menu.exec(modules_list->mapToGlobal(pos)))
-				unload_module(current_item);
-		}
-	}
-	catch(...)
-	{
-		;
-	}
-
-	stop_experiment();
-}
-
-void CMainWindow::process_src_video()
-{
-	// TODO
-	;
-}
-
-void CMainWindow::process_dst_video()
-{
-	// TODO
-	;
-}
-
-// ############################################################################ 
-// Слот - запуск эксперимента 
-
 void CMainWindow::toggle_experiment()
 {
 	if(is_experiment_run)
@@ -296,7 +318,7 @@ void CMainWindow::toggle_experiment()
 // ############################################################################ 
 // Слоты - статистика
 
-void CMainWindow::stat_full_time(const bool is_checked)
+void CMainWindow::stat_sec_per_frame(const bool is_checked)
 {
 	; // TODO
 }
