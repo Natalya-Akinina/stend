@@ -38,8 +38,7 @@ QString CLua::load_module(const QString module_fname)
 
 void CLua::unload_module(const QString module_name)
 {
-	// TODO
-	printf_TODO("unload_module");
+	qTODO("unload_module");
 }
 
 int CLua::run_module(lua_State * state)

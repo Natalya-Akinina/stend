@@ -14,12 +14,10 @@ typedef int (* get_value_function)(const bool, const unsigned, void *);
 typedef int (* set_value_function)(const bool, const unsigned, const void *);
 typedef int (* run_function)();
 
-typedef pair<QString, int> t_elem;
-
 class CModule
 {
 	const unsigned buf_size = 4096;
-	vector<t_elem> _params, _return_values;
+	QList<QPair<QString, int> > _params, _return_values;
 	QString _name;
 	QLibrary library;
 

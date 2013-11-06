@@ -1,12 +1,17 @@
 
 #include "ui/gui/ui/main_window.hpp"
 
-// TODO Сохранение результатов в файл
-
 CMainWindow::CMainWindow() :
 	QMainWindow(NULL), script_view(this), modules_list(this), src_video_view(this), dst_video_view(this), main_loop(lua)
 {
 	setupUi(this);
+
+	// ############################################################################ 
+	// Связь с главным циклом и драйвером дисплея
+
+	p_main_window = this;
+	connect(& main_loop, SIGNAL(__start()), this, SLOT(start_experiment()));
+	connect(& main_loop, SIGNAL(__stop()), this, SLOT(stop_experiment()));
 
 	// ############################################################################ 
 	// Настройка виджетов
@@ -33,6 +38,11 @@ CMainWindow::CMainWindow() :
 	setup_window(modules_list_window, & modules_list, modules_list_window_title, ":/icons/module", QSize(200, 400), flags);
 	setup_window(src_video_window, & src_video_view, src_video_window_title, ":/icons/src_video", QSize(400, 400), video_flags);
 	setup_window(dst_video_window, & dst_video_view, dst_video_window_title, ":/icons/save", QSize(400, 400), video_flags);
+
+	foreground_dst_video_window();
+	foreground_src_video_window();
+	foreground_modules_list_window();
+	foreground_script_window();
 
 	modules_list_window->setStatusTip(modules_list_window_title);
 
@@ -65,7 +75,24 @@ CMainWindow::CMainWindow() :
 	// ############################################################################ 
 	// Статистика
 
-	stat_menu.addAction(QIcon(":/icons/stat_sec_per_frame"), trUtf8("Время выполнения алгоритма на кадре"), this, SLOT(stat_sec_per_frame(bool)))->setCheckable(true);
+	stat_menu_display.setTitle(trUtf8("Вывести на экран"));
+	stat_menu_display.setIcon(QIcon(":/stat/display"));
+
+	stat_menu_save.setTitle(trUtf8("Сохранить"));
+	stat_menu_save.setIcon(QIcon(":/stat/save"));
+
+	for(auto & it : main_loop.stats)
+	{
+		QString icon_name = ":/stat/";
+		CStat * obj = it.get();
+		icon_name += obj->name_en();
+
+		stat_menu_display.addAction(QIcon(icon_name), obj->name_ru(), obj, SLOT(display()));
+		stat_menu_save.addAction(QIcon(icon_name), obj->name_ru(), obj, SLOT(save()));
+	}
+
+	stat_menu.addMenu(& stat_menu_display);
+	stat_menu.addMenu(& stat_menu_save);
 
 	// ############################################################################ 
 
@@ -90,7 +117,7 @@ CMainWindow::CMainWindow() :
 
 	add_button(process_button, process_menu, trUtf8("Загрузка и сохранение"), ":/icons/process");
 	add_button(window_button, window_menu, trUtf8("Управление окнами"), ":/icons/window");
-	add_button(stat_button, stat_menu, trUtf8("Статистика"), ":/icons/stat");
+	add_button(stat_button, stat_menu, trUtf8("Статистика"), ":/stat/stat");
 	toggle_experiment_action = tool_bar->addAction("", this, SLOT(toggle_experiment()));
 	add_action(trUtf8("О программе"), ":/icons/about", SLOT(about()));
 
@@ -102,32 +129,48 @@ CMainWindow::CMainWindow() :
 	unset_dst_video();
 }
 
+CMainWindow::~CMainWindow()
+{
+	;
+}
+
+void CMainWindow::display(QMdiSubWindow * window, const Mat & img)
+{
+	Mat rgb;
+	const QSize size(img.cols, img.rows);
+
+	cvtColor(img, rgb, CV_BGR2RGB);
+
+	((QLabel *) window->widget())->setPixmap
+	(
+		QPixmap::fromImage
+		(
+			QImage((const unsigned char *) rgb.data, rgb.cols, rgb.rows, QImage::Format_RGB888)
+		)
+	);
+
+	window->resize(size);
+	window->setMaximumSize(size);
+}
+
+void CMainWindow::display(const Mat & src, const Mat & dst)
+{
+	display(src_video_window, src);
+	display(dst_video_window, dst);
+}
+
 // ############################################################################ 
-// Служебные функции
+// Контроль эксперимента
 
 void CMainWindow::start_experiment()
 {
 	try
 	{
-		if(! is_experiment_run)
-		{
-			const QString tip = trUtf8("Останов эксперимента");
+		const QString tip = trUtf8("Останов эксперимента");
 
-			toggle_experiment_action->setIcon(QIcon(":/icons/stop"));
-			toggle_experiment_action->setToolTip(tip);
-			toggle_experiment_action->setStatusTip(tip);
-
-			main_loop.sec_per_frame.measure = toggle_experiment_action->isChecked();
-
-			is_experiment_run = true;
-
-			// ############################################################################ 
-
-			lua.load_script(script_fname);
-			main_loop(src_video_fname, dst_video_fname);
-			
-			// TODO
-		}
+		toggle_experiment_action->setIcon(QIcon(":/icons/stop"));
+		toggle_experiment_action->setToolTip(tip);
+		toggle_experiment_action->setStatusTip(tip);
 	}
 	catch(...)
 	{
@@ -137,19 +180,23 @@ void CMainWindow::start_experiment()
 
 void CMainWindow::stop_experiment()
 {
-	if(is_experiment_run)
-	{
-		main_loop.sec_per_frame.display(); // TODO Отладить
-	}
-
 	const QString tip = trUtf8("Запуск эксперимента");
 
 	toggle_experiment_action->setIcon(QIcon(":/icons/start"));
 	toggle_experiment_action->setToolTip(tip);
 	toggle_experiment_action->setStatusTip(tip);
 	toggle_experiment_action->setEnabled(! (script_fname.isEmpty() || src_video_fname.isEmpty() || dst_video_fname.isEmpty()));
+}
 
-	is_experiment_run = false;
+void CMainWindow::toggle_experiment()
+{
+	if(main_loop.is_run())
+		main_loop.stop();
+	else
+	{
+		lua.load_script(script_fname);
+		main_loop.start(src_video_fname, dst_video_fname);
+	}
 }
 
 // ############################################################################ 
@@ -212,9 +259,9 @@ LOAD_SET(load_src_video, unload_src_video, src_video_fname, src_video_window, sr
 	VideoCapture video(__fname.toStdString());
 
 	throw_if(! video.isOpened(), "Не удалось открыть файл с исходной видеопоследовательностью");
-	video.set(CV_CAP_PROP_POS_FRAMES, video.get(CV_CAP_PROP_FRAME_COUNT / 2));
+	video.set(CV_CAP_PROP_POS_FRAMES, video.get(CV_CAP_PROP_FRAME_COUNT) / 2);
 	throw_if(! video.read(frame), "Не удалось прочитать файл с исходной видеопоследовательностью");
-	CQt5Display::display(src_video_window, frame);
+	display(src_video_window, frame);
 );
 
 LOAD_SET(set_dst_video, unset_dst_video, dst_video_fname, dst_video_window, dst_video_window_title,
@@ -305,21 +352,5 @@ void CMainWindow::about()
 	{
 		;
 	}
-}
-
-void CMainWindow::toggle_experiment()
-{
-	if(is_experiment_run)
-		stop_experiment();
-	else
-		start_experiment();
-}
-
-// ############################################################################ 
-// Слоты - статистика
-
-void CMainWindow::stat_sec_per_frame(const bool is_checked)
-{
-	; // TODO
 }
 

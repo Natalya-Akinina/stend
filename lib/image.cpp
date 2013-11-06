@@ -1,7 +1,8 @@
 
 #include "lib/image.hpp"
 
-vector< shared_ptr<CImage> > images; 
+typedef QSharedPointer<CImage> PCImage;
+QList<PCImage> images; 
 
 // ############################################################################ 
 
@@ -13,7 +14,7 @@ image image_create(const unsigned height, const unsigned width, const unsigned c
 	try
 	{
 		throw_null(img = new CImage(height, width, ch_num), "TODO");
-		images.push_back(shared_ptr<CImage>(img));
+		images.append(PCImage(img));
 		_img = & img->img;
 	}
 	catch(...)
@@ -40,11 +41,12 @@ int image_delete(const image img)
 	const unsigned size = images.size();
 	unsigned v;
 
+	// TODO find или removeOne
 	if(img != NULL)
 	{
 		for(v = 0; v < size; v++)
 			if(& images[v]->img == img)
-				images.erase(images.begin() + v);
+				images.removeAt(v);
 	}
 
 	return 0;

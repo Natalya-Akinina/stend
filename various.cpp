@@ -1,34 +1,52 @@
 
 #include "all.hpp"
 
-int printf_TODO(const char * format, ...)
+void message_handler(QtMsgType type, const QMessageLogContext & context, const QString & msg)
 {
-	int ret = 0;
-	char buf[1024 + strlen(format)];
-	va_list args;
+	bool is_abort = false;
+	QString __msg;
+	QTextStream stream(& __msg);
 
-	sprintf(buf, "[ TODO ] %s", format);
+	if(! msg.isEmpty())
+		stream << "\n" << msg;
 
-	va_start(args, format);
-	ret = vprintf(buf, args);
-	va_end(args);
+	stream << "\nFile " << context.file << "\nLine " << context.line << "\nFunction: " << context.function;
 
-	return ret;
-}
+    switch(type)
+	{
+		case QtDebugMsg:
+		{
+			__msg.prepend("[ TODO ]");
 
-int printf_error(const char * format, ...)
-{
-	int ret = 0;
-	char buf[1024 + strlen(format)];
-	va_list args;
+			break;
+		}
+	    case QtWarningMsg:
+		{
+			// TODO Подавление Qt'шных сообщений
+			return;
+//			__msg.prepend("[ Warning ]");
 
-	sprintf(buf, "[ Error ] %s", format);
+//			break;
+		}
+		case QtCriticalMsg:
+		{
+			__msg.prepend("[ Critical ]");
 
-	va_start(args, format);
-	ret = vfprintf(stderr, buf, args);
-	va_end(args);
+			break;
+		}
+		case QtFatalMsg:
+		{
+			__msg.prepend("[ Fatal ]");
+			is_abort = true;
 
-	return ret;
+			break;
+		}
+    }
+
+	message(__msg);
+
+	if(is_abort)
+		abort();
 }
 
 void * alloc(const unsigned type_size, const unsigned dim, ...)
@@ -41,7 +59,7 @@ void * alloc(const unsigned type_size, const unsigned dim, ...)
 
 	try
 	{
-		throw_null(dim_size = (unsigned *) alloca(dim * sizeof(unsigned)), "TODO");
+		throw_null(dim_size = (unsigned *) alloca(dim * sizeof(unsigned)), "Ошибка при выделении памяти");
 
 		va_start(val, dim);
 
@@ -53,7 +71,7 @@ void * alloc(const unsigned type_size, const unsigned dim, ...)
 
 		va_end(val);
 
-		throw_null(mem = malloc(size), "TODO");
+		throw_null(mem = malloc(size), "Ошибка при выделении памяти");
 
 		for(u = 0, num = 1, dof = (char *) mem; u < dim_1; u++)
 		{

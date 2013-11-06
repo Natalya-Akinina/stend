@@ -1,7 +1,8 @@
 
 #include "lib/matrix.hpp"
 
-vector< shared_ptr<Mat> > matrices;
+typedef QSharedPointer<Mat> PMat;
+QList<PMat> matrices;
 
 int depth_to_met(const int depth)
 {
@@ -54,7 +55,7 @@ matrix matrix_create(const unsigned height, const unsigned width, const unsigned
 			};
 		}
 
-		matrices.push_back(shared_ptr<Mat>(mtx));
+		matrices.append(PMat(mtx));
 	}
 	catch(...)
 	{
@@ -109,7 +110,7 @@ matrix matrix_load_image(const char * fname)
 
 int matrix_save_image(matrix mtx, const char * fname)
 {
-	throw_TODO("TODO");
+	qTODO();
 }
 
 int matrix_get_value(matrix mtx, const unsigned row, const unsigned column, const unsigned channel, void * value)
@@ -252,10 +253,11 @@ int matrix_delete(matrix mtx)
 		const unsigned size = matrices.size();
 		unsigned v;
 
+		// TODO find или removeOne()
 		for(v = 0; v < size; v++)
-			if(matrices[v].get() == mtx)
+			if(matrices[v] == mtx)
 			{
-				matrices.erase(matrices.begin() + v);
+				matrices.removeAt(v);
 
 				return 0;
 			}

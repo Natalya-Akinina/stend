@@ -30,22 +30,24 @@
 using namespace std;
 using namespace cv;
 
+// ############################################################################ 
+// Вывод сообщений
+
+void message(const QString msg);
+void message_handler(QtMsgType type, const QMessageLogContext & context, const QString & msg);
+
+// ############################################################################ 
+// TODO
+
+#define qTODO qDebug
+
 // ############################################################################
 // Исключения
 
-void error_message(const char * msg);
-
 #define throw_(msg) \
 {\
-	fprintf(stderr, "[Exception] File %s, line %d\n", __FILE__, __LINE__);\
-	error_message(msg);\
+	qCritical() << QObject::trUtf8(msg);\
 	throw 1;\
-};
-
-#define throw_TODO(msg) \
-{\
-	fprintf(stderr, "TODO ");\
-	throw_(msg);\
 };
 
 #define throw_if(condition, msg) \
@@ -56,12 +58,6 @@ void error_message(const char * msg);
 
 #define throw_null(pointer, msg) \
 	throw_if((pointer) == NULL, msg)
-
-// ############################################################################
-// Отладочная печать
-
-int printf_TODO(const char * format, ...);
-int printf_error(const char * format, ...);
 
 // ############################################################################ 
 // Выделение памяти

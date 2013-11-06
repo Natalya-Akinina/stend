@@ -5,33 +5,63 @@
 #include "all.hpp"
 #include "config.hpp"
 
-class CStat
+class CSecPerFrameStat;
+
+class CMeasure
 {
+	protected:
+
+		QList<double> __sec_per_frame;
+
+		friend class CSecPerFrameStat;
+
 	public:
 
-		bool measure = false;
+		CMeasure();
+		~CMeasure();
 
-		CStat();
+		void reset();
+		void operator()(const double sec_per_frame);
+};
+
+class CStat : public QObject
+{
+	Q_OBJECT
+
+	protected:
+
+		CMeasure & __measure; // TODO константа
+
+	public:
+
+		CStat(CMeasure & measure);
 		virtual ~CStat();
 
-		virtual void init() = 0;
+		virtual QString name_en() const = 0;
+		virtual QString name_ru() const = 0;
+
+	public slots:
+
 		virtual void display() = 0;
-		virtual void save(const QString fname) = 0;
+		virtual void save(const QString name = "") = 0;
 };
 
 class CSecPerFrameStat : public CStat
 {
-	vector<double> values;
+	Q_OBJECT
 
 	public:
 
-		CSecPerFrameStat();
+		CSecPerFrameStat(CMeasure & measure);
 		~CSecPerFrameStat();
 
-		void init();
-		void operator()(const double value);
+		QString name_en() const { return "sec_per_frame"; };
+		QString name_ru() const { return trUtf8("Время выполнения алгоритма на кадре"); };
+
+	public slots:
+
 		void display();
-		void save(const QString fname);
+		void save(const QString fname = "");
 };
 
 #endif

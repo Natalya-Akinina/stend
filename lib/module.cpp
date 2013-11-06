@@ -80,14 +80,14 @@ void CModule::load_elem(const bool is_param, const unsigned num)
 	unsigned v;
 	char buf[buf_size];
 	int type;
-	vector<t_elem> & array = is_param ? _params : _return_values;
+	auto & array = is_param ? _params : _return_values;
 
 	for(v = 0; v < num; v++)
 	{
 		throw_if((* _get_name)(is_param, v, buf, buf_size), "TODO");
 		throw_if((* _get_type)(is_param, v, & type), "TODO");
 
-		array.push_back(t_elem(buf, type));
+		array.append(QPair<QString, int>(QObject::trUtf8(buf), type));
 	}
 }
 
@@ -97,9 +97,9 @@ int CModule::run(lua_State * state)
 
 	v = 2; // Первый параметр - имя алгоритма
 
-	for(auto & it : _params)
+	for(auto & param : _params)
 	{
-		switch(it.second)
+		switch(param.second)
 		{
 
 #define SET_PARAM(MY_TYPE, CPP_TYPE, LUA_FUN)\
@@ -126,9 +126,9 @@ case MY_TYPE:\
 
 	v = 0;
 
-	for(auto & it : _return_values)
+	for(auto & return_value : _return_values)
 	{
-		switch(it.second)
+		switch(return_value.second)
 		{
 
 #define GET_RETURN_VALUES(MY_TYPE, CPP_TYPE, LUA_FUN)\

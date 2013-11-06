@@ -5,10 +5,7 @@
 #include "lib/matrix.hpp"
 #include "lib/image.hpp"
 #include "stat/stat.hpp"
-#include "display/display.hpp"
 #include "ui/main_window.hpp"
-
-shared_ptr<CMainWindow> main_window;
 
 int main(int argc, char * argv[])
 {
@@ -17,6 +14,7 @@ int main(int argc, char * argv[])
 	try
 	{
 		QApplication app(argc, argv);
+		qInstallMessageHandler(message_handler);
 		Q_INIT_RESOURCE(resources);
 
 		// ############################################################################ 
@@ -42,13 +40,10 @@ int main(int argc, char * argv[])
 
 	//	QTest::qWait(2000); // TODO Раскомментировать
 
-		CMainWindow * p_main_window;
+		CMainWindow main_window;
 
-		main_window.reset(new CMainWindow);
-		throw_null(p_main_window = main_window.get(), "Не удалось создать главное окно программы");
-
-		p_main_window->show();
-		splash.finish(p_main_window);
+		main_window.show();
+		splash.finish(& main_window);
 
 		ret = app.exec();
 	}
@@ -63,14 +58,9 @@ int main(int argc, char * argv[])
 	return ret;
 }
 
-void error_message(const char * msg)
+void message(const QString msg)
 {
 	if(msg != NULL)
-		QMessageBox::critical(NULL, QObject::trUtf8("Ошибка"), QObject::trUtf8(msg));
-}
-
-CDisplay * CDisplay::create(const unsigned fps)
-{
-	return new CQt5Display(main_window->src_video_window, main_window->dst_video_window, & main_window->is_experiment_run, 25);
+		QMessageBox::critical(NULL, QObject::trUtf8("Ошибка"), msg);
 }
 

@@ -1,7 +1,30 @@
 
 #include "stat/stat.hpp"
 
-CStat::CStat()
+CMeasure::CMeasure()
+{
+	;
+}
+
+CMeasure::~CMeasure()
+{
+	;
+}
+
+void CMeasure::reset()
+{
+	__sec_per_frame.clear();
+}
+
+void CMeasure::operator()(const double sec_per_frame)
+{
+	__sec_per_frame.append(sec_per_frame);
+}
+
+// ############################################################################ 
+
+CStat::CStat(CMeasure & measure) :
+	__measure(measure)
 {
 	;
 }
@@ -14,8 +37,8 @@ CStat::~CStat()
 // ############################################################################ 
 // Секунд на кадр
 
-CSecPerFrameStat::CSecPerFrameStat() :
-	CStat()
+CSecPerFrameStat::CSecPerFrameStat(CMeasure & measure) :
+	CStat(measure)
 {
 	;
 }
@@ -25,20 +48,9 @@ CSecPerFrameStat::~CSecPerFrameStat()
 	;
 }
 
-void CSecPerFrameStat::init()
-{
-	values.clear();
-}
-
-void CSecPerFrameStat::operator()(const double value)
-{
-	if(measure)
-		values.push_back(value);
-}
-
 void CSecPerFrameStat::display()
 {
-	if(measure)
+	try
 	{
 		QProcess process;
 		QStringList args;
@@ -50,27 +62,37 @@ void CSecPerFrameStat::display()
 
 		process.start("Rscript", args);
 		process.waitForFinished();
-	
+		
 		remove(fname);
+	}
+	catch(...)
+	{
+		;
 	}
 }
 
 void CSecPerFrameStat::save(const QString fname)
 {
-	if(measure)
+	try
 	{
-		const unsigned frame_num = values.size();
+		// TODO получить fname, если fname == ""
+
+		const unsigned frame_num = __measure.__sec_per_frame.size();
 		unsigned v;
 		QTextStream stream;
 		QFile fl(fname);
 
-		throw_if(! fl.open(QIODevice::WriteOnly | QIODevice::Text), "TODO");
+		throw_if(! fl.open(QIODevice::WriteOnly | QIODevice::Text), "Ошибка при открытии файла");
 		stream.setDevice(& fl);
 
 		stream.setRealNumberPrecision(11);
 
 		for(v = 0; v < frame_num; v++)
-			stream << v << "\t" << values[v] << endl;
+			stream << v << "\t" << __measure.__sec_per_frame[v] << endl;
+	}
+	catch(...)
+	{
+		;
 	}
 }
 
