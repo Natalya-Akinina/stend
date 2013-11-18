@@ -22,10 +22,20 @@ void CDisplay::reset(const unsigned fps)
 	delay = 1000 / fps;
 }
 
-void CDisplay::show(const Mat & src, const Mat & dst)
+QString CDisplay::get_fname_to_save_stat()
 {
-	p_main_window->display(src, dst);
+	return p_main_window->get_fname_to_save_stat();
+}
+
+void CDisplay::show_Mat(const Mat & src, const Mat & dst)
+{
+	p_main_window->display_Mat(src, dst);
 
 	QTest::qWait(delay);
+}
+
+void CDisplay::show_png(const QString & name_ru, const QString & fname)
+{
+	p_main_window->display_png(name_ru, fname);
 }
 

@@ -13,18 +13,17 @@ int main(int argc, char * argv[])
 
 	try
 	{
-		const QString config_fname = argv[1];
-		const QString script_fname = argv[2];
-		const QString src_video_fname = argv[3];
-		const QString dst_video_fname = argv[4];
+		qInstallMessageHandler(message_handler);
+		Q_INIT_RESOURCE(scripts);
+
+		throw_if(argc != 4, "Недостаточное количество аргументов");
+
+		const QString script_fname = argv[1];
+		const QString src_video_fname = argv[2];
+		const QString dst_video_fname = argv[3];
 
 		// ############################################################################ 
 
-		qInstallMessageHandler(message_handler);
-
-		throw_if(argc != 5, "Недостаточное количество аргументов");
-
-		CConfig::load(config_fname);
 		CDisplay::init();
 		CMatrix::init();
 		CImage::init();
@@ -32,9 +31,7 @@ int main(int argc, char * argv[])
 		CLua lua;
 		CMainLoop main_loop(lua);
 
-		lua.load_module("/home/amv/disser/project/super_stend/src/modules/build/libdemo_image.so");
-		// lua.load_module("demo_image");
-		// lua.load_module("demo_matrix");
+		lua.load_module("/home/amv/disser/project/super_stend/src/modules/build/demo_image/libdemo_image.so");
 
 		lua.load_script(script_fname);
 		main_loop.start(src_video_fname, dst_video_fname);

@@ -3,7 +3,7 @@
 #define STAT_HPP
 
 #include "all.hpp"
-#include "config.hpp"
+#include "main_loop/display.hpp"
 
 class CSecPerFrameStat;
 
@@ -30,7 +30,9 @@ class CStat : public QObject
 
 	protected:
 
-		CMeasure & __measure; // TODO константа
+		const CMeasure & __measure;
+
+		virtual void save_data(QFile & fl) = 0;
 
 	public:
 
@@ -42,13 +44,17 @@ class CStat : public QObject
 
 	public slots:
 
-		virtual void display() = 0;
-		virtual void save(const QString name = "") = 0;
+		virtual void display();
+		void save(const QString fname = "");
 };
 
 class CSecPerFrameStat : public CStat
 {
 	Q_OBJECT
+
+	protected:
+
+		void save_data(QFile & fl);
 
 	public:
 
@@ -57,11 +63,6 @@ class CSecPerFrameStat : public CStat
 
 		QString name_en() const { return "sec_per_frame"; };
 		QString name_ru() const { return trUtf8("Время выполнения алгоритма на кадре"); };
-
-	public slots:
-
-		void display();
-		void save(const QString fname = "");
 };
 
 #endif

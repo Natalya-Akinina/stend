@@ -11,7 +11,9 @@ class CDisplay
 		static void init();
 		static void destroy();
 		static void reset(const unsigned fps);
-		static void show(const Mat & src, const Mat & dst);
+		static QString get_fname_to_save_stat();
+		static void show_Mat(const Mat & src, const Mat & dst);
+		static void show_png(const QString & name_ru, const QString & fname);
 };
 
 #endif

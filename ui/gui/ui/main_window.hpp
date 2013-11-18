@@ -33,7 +33,8 @@ class CMainWindow : public QMainWindow, private Ui::main_window
 	CLua lua;
 	CMainLoop main_loop;
 	
-	void display(QMdiSubWindow * window, const Mat & img);
+	void setup_sub_window(QMdiSubWindow *& window, QWidget * widget, const QString window_title, const QString icon_name, const QSize size, const QFlags<Qt::WindowType> flags, bool delete_on_close);
+	void display_Mat(QMdiSubWindow * window, const Mat & img);
 
 	void load_module(const QString module_fname);
 	void unload_module(QListWidgetItem * current_item);
@@ -52,7 +53,9 @@ class CMainWindow : public QMainWindow, private Ui::main_window
 		CMainWindow();
 		~CMainWindow();
 
-		void display(const Mat & src, const Mat & dst);
+		QString get_fname_to_save_stat();
+		void display_Mat(const Mat & src, const Mat & dst);
+		void display_png(const QString & name_ru, const QString & fname);
 
 	public slots:
 

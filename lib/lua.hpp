@@ -3,7 +3,6 @@
 #define LUA_HPP
 
 #include "all.hpp"
-#include "config.hpp"
 #include "lib/module.hpp"
 #include "lib/opencv.hpp"
 #include "lib/matrix.hpp"

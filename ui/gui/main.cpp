@@ -16,6 +16,7 @@ int main(int argc, char * argv[])
 		QApplication app(argc, argv);
 		qInstallMessageHandler(message_handler);
 		Q_INIT_RESOURCE(resources);
+		Q_INIT_RESOURCE(scripts);
 
 		// ############################################################################ 
 		// Заставка
@@ -29,10 +30,6 @@ int main(int argc, char * argv[])
 		// ############################################################################ 
 		// Инициализация стенда
 
-		QString fname = QFileDialog::getOpenFileName(NULL, QObject::trUtf8("Загрузить конфигурационный файл"), "", QObject::trUtf8("Конфигурационный файл (*.xml)"));
-		throw_if(fname.isEmpty(), "Конфигурационный файл загрузить не удалось");
-
-		CConfig::load(fname);
 		CMatrix::init();
 		CImage::init();
 		

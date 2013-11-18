@@ -23,6 +23,7 @@
 #include <QListWidget>
 #include <QTextBrowser>
 #include <QMdiSubWindow>
+#include <QResource>
 #include <QLabel>
 #include <lua.hpp>
 #include <opencv2/opencv.hpp>

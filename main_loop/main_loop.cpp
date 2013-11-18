@@ -48,9 +48,12 @@ void CMainLoop::start(const QString src_fname, const QString dst_fname)
 
 			dst.write(* dst_frame);
 
-			CDisplay::show(src_frame, * dst_frame);
+			CDisplay::show_Mat(src_frame, * dst_frame);
 			
 			CImage::clear();
+
+			if(counter == 10)
+				break; // TODO
 		}
 
 		stop();

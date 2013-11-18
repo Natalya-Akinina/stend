@@ -21,28 +21,12 @@ CMainWindow::CMainWindow() :
 	modules_list.setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(& modules_list, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(modules_list_context_menu(const QPoint &)));
 
-	const auto flags = Qt::Window | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowShadeButtonHint;
-	const auto video_flags = Qt::SubWindow | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowShadeButtonHint;
+	const auto flags = Qt::SubWindow | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowShadeButtonHint;
 
-	auto setup_window = [ this ](QMdiSubWindow *& window, QWidget * widget, const QString window_title, const QString icon_name, const QSize size, const QFlags<Qt::WindowType> flags)
-	{
-		window = mdi_area->addSubWindow(widget, flags);
-		window->setWindowTitle(window_title);
-		window->setWindowIcon(QIcon(icon_name)); // TODO Из-за флагов иконка не отображается
-		window->resize(size);
-		window->setAttribute(Qt::WA_DeleteOnClose, false);
-		window->setSystemMenu(NULL);
-	};
-
-	setup_window(script_window, & script_view, script_window_title, ":/icons/script", QSize(600, 600), flags);
-	setup_window(modules_list_window, & modules_list, modules_list_window_title, ":/icons/module", QSize(200, 400), flags);
-	setup_window(src_video_window, & src_video_view, src_video_window_title, ":/icons/src_video", QSize(400, 400), video_flags);
-	setup_window(dst_video_window, & dst_video_view, dst_video_window_title, ":/icons/save", QSize(400, 400), video_flags);
-
-	foreground_dst_video_window();
-	foreground_src_video_window();
-	foreground_modules_list_window();
-	foreground_script_window();
+	setup_sub_window(script_window, & script_view, script_window_title, ":/icons/script", QSize(600, 600), flags, false);
+	setup_sub_window(modules_list_window, & modules_list, modules_list_window_title, ":/icons/module", QSize(200, 400), flags, false);
+	setup_sub_window(src_video_window, & src_video_view, src_video_window_title, ":/icons/src_video", QSize(400, 400), flags, false);
+	setup_sub_window(dst_video_window, & dst_video_view, dst_video_window_title, ":/icons/save", QSize(400, 400), flags, false);
 
 	modules_list_window->setStatusTip(modules_list_window_title);
 
@@ -93,6 +77,7 @@ CMainWindow::CMainWindow() :
 
 	stat_menu.addMenu(& stat_menu_display);
 	stat_menu.addMenu(& stat_menu_save);
+	stat_menu.setEnabled(false);
 
 	// ############################################################################ 
 
@@ -134,7 +119,24 @@ CMainWindow::~CMainWindow()
 	;
 }
 
-void CMainWindow::display(QMdiSubWindow * window, const Mat & img)
+void CMainWindow::setup_sub_window(QMdiSubWindow *& window, QWidget * widget, const QString window_title, const QString icon_name, const QSize size, const QFlags<Qt::WindowType> flags, bool delete_on_close)
+{
+	throw_null(window = mdi_area->addSubWindow(widget, flags), "Не удалось создать дочернее окно");
+	window->setWindowTitle(window_title);
+	window->setWindowIcon(QIcon(icon_name)); // TODO Из-за флагов иконка не отображается
+	window->resize(size);
+	window->setAttribute(Qt::WA_DeleteOnClose, delete_on_close);
+	window->setSystemMenu(NULL);
+	mdi_area->setActiveSubWindow(window);
+	window->show();
+}
+
+QString CMainWindow::get_fname_to_save_stat()
+{
+	return QFileDialog::getSaveFileName(this, trUtf8("Сохранить статистику"), "", trUtf8("Текстовый файл (*.txt)"));
+}
+
+void CMainWindow::display_Mat(QMdiSubWindow * window, const Mat & img)
 {
 	Mat rgb;
 	const QSize size(img.cols, img.rows);
@@ -153,10 +155,35 @@ void CMainWindow::display(QMdiSubWindow * window, const Mat & img)
 	window->setMaximumSize(size);
 }
 
-void CMainWindow::display(const Mat & src, const Mat & dst)
+void CMainWindow::display_Mat(const Mat & src, const Mat & dst)
 {
-	display(src_video_window, src);
-	display(dst_video_window, dst);
+	display_Mat(src_video_window, src);
+	display_Mat(dst_video_window, dst);
+}
+
+void CMainWindow::display_png(const QString & name_ru, const QString & fname)
+{
+	QMdiSubWindow * window = NULL;
+	QLabel * view = NULL;
+	QPixmap pixmap(fname);
+	QSize size;
+
+	try
+	{
+		throw_if(pixmap.isNull(), "Не удалось загрузить график");
+		throw_null(view = new QLabel(this), "Не удалось создать средство отображения PNG-файлов");
+		view->setPixmap(pixmap);
+		size = pixmap.size();
+		setup_sub_window(window, view, name_ru, ":/icons/experiment_results", size, 0, true);
+		window->setMaximumSize(size);
+	}
+	catch(...)
+	{
+		if(window != NULL)
+			delete window;
+		else if(view != NULL) // We bind view to window using DeleteOnClose
+			delete view;
+	}
 }
 
 // ############################################################################ 
@@ -171,6 +198,8 @@ void CMainWindow::start_experiment()
 		toggle_experiment_action->setIcon(QIcon(":/icons/stop"));
 		toggle_experiment_action->setToolTip(tip);
 		toggle_experiment_action->setStatusTip(tip);
+
+		stat_menu.setEnabled(true);
 	}
 	catch(...)
 	{
@@ -181,11 +210,12 @@ void CMainWindow::start_experiment()
 void CMainWindow::stop_experiment()
 {
 	const QString tip = trUtf8("Запуск эксперимента");
+	const bool is_experiment_may_be_run = ! (script_fname.isEmpty() || src_video_fname.isEmpty() || dst_video_fname.isEmpty());
 
 	toggle_experiment_action->setIcon(QIcon(":/icons/start"));
 	toggle_experiment_action->setToolTip(tip);
 	toggle_experiment_action->setStatusTip(tip);
-	toggle_experiment_action->setEnabled(! (script_fname.isEmpty() || src_video_fname.isEmpty() || dst_video_fname.isEmpty()));
+	toggle_experiment_action->setEnabled(is_experiment_may_be_run);
 }
 
 void CMainWindow::toggle_experiment()
@@ -261,7 +291,7 @@ LOAD_SET(load_src_video, unload_src_video, src_video_fname, src_video_window, sr
 	throw_if(! video.isOpened(), "Не удалось открыть файл с исходной видеопоследовательностью");
 	video.set(CV_CAP_PROP_POS_FRAMES, video.get(CV_CAP_PROP_FRAME_COUNT) / 2);
 	throw_if(! video.read(frame), "Не удалось прочитать файл с исходной видеопоследовательностью");
-	display(src_video_window, frame);
+	display_Mat(src_video_window, frame);
 );
 
 LOAD_SET(set_dst_video, unset_dst_video, dst_video_fname, dst_video_window, dst_video_window_title,
