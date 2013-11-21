@@ -4,7 +4,7 @@
 typedef QSharedPointer<Mat> PMat;
 QList<PMat> matrices;
 
-int depth_to_met(const int depth)
+int depth_to_int(const int depth)
 {
 	int type;
 
@@ -24,7 +24,7 @@ int depth_to_met(const int depth)
 		}
 		default:
 		{
-			throw_("TODO");
+			throw_("Несуществующий тип канала");
 		}
 	}
 
@@ -43,13 +43,13 @@ matrix matrix_create(const unsigned height, const unsigned width, const unsigned
 		{
 			case UNSIGNED_INT_8_BIT_ELEMENT:
 			{
-				throw_null(mtx = new Mat(height, width, CV_8UC(ch_num)), "TODO");
+				throw_null(mtx = new Mat(height, width, CV_8UC(ch_num)), "Не удалось создать восьмибитную матрицу");
 
 				break;
 			};
 			case DOUBLE_ELEMENT:
 			{
-				throw_null(mtx = new Mat(height, width, CV_64FC(ch_num)), "TODO");
+				throw_null(mtx = new Mat(height, width, CV_64FC(ch_num)), "Не удалось создать вещественную матрицу повышенной точности");
 
 				break;
 			};
@@ -74,14 +74,15 @@ matrix matrix_copy(matrix mtx)
 	
 	try
 	{
-		throw_null(mtx, "TODO")
-		throw_null(_mtx = (Mat *) matrix_create(my_matrix_height(mtx), my_matrix_width(mtx), my_matrix_number_of_channel(mtx), my_matrix_element_type(mtx)), "TODO");
+		throw_null(mtx, "Исходная матрица отсутствует")
+		throw_null(_mtx = (Mat *) matrix_create(my_matrix_height(mtx), my_matrix_width(mtx), my_matrix_number_of_channel(mtx), my_matrix_element_type(mtx)), "Не удалось создать матрицу");
 
 		* _mtx = ((Mat *) mtx)->clone();
 	}
 	catch(...)
 	{
 		matrix_delete(_mtx);
+		_mtx = NULL;
 	}
 
 	return _mtx;
@@ -95,14 +96,15 @@ matrix matrix_load_image(const char * fname)
 	{
 		Mat img = imread(fname);
 
-		throw_if(img.empty(), "TODO");
-		throw_null(mtx = (Mat *) matrix_create(img.rows, img.cols, img.channels(), depth_to_met(img.depth())), "TODO");
+		throw_if(img.empty(), "Не удалось загрузить изображение");
+		throw_null(mtx = (Mat *) matrix_create(img.rows, img.cols, img.channels(), depth_to_int(img.depth())), "Не удалось создать матрицу");
 
 		* mtx = img.clone();
 	}
 	catch(...)
 	{
 		matrix_delete(mtx);
+		mtx = NULL;
 	}
 
 	return mtx;
@@ -110,7 +112,24 @@ matrix matrix_load_image(const char * fname)
 
 int matrix_save_image(matrix mtx, const char * fname)
 {
-	qTODO();
+	int ret = 0;
+
+	try
+	{
+		Mat * __mtx = (Mat *) mtx;
+
+		throw_null(__mtx, "Матрица отсутствует");
+		throw_if(__mtx->empty(), "Матрица не содержит данных");
+		throw_null(fname, "Путь и имя результирующего файла отсутствуют");
+
+		throw_if(! imwrite(fname, __mtx), "Не удалось сохранить изображение");
+	}
+	catch(...)
+	{
+		ret = -1;
+	}
+
+	return ret;
 }
 
 int matrix_get_value(matrix mtx, const unsigned row, const unsigned column, const unsigned channel, void * value)
@@ -137,7 +156,7 @@ case type_ind:\
 
 			default:
 			{
-				throw_("TODO");
+				throw_("Некорректный тип канала");
 			}
 		}
 	}
@@ -173,7 +192,7 @@ case type_ind:\
 
 			default:
 			{
-				throw_("TODO");
+				throw_("Некорректный тип канала");
 			}
 		}
 	}
@@ -188,7 +207,7 @@ case type_ind:\
 #define GET_INFO(fun, my_fun, param)\
 unsigned my_fun(matrix mtx)\
 {\
-	throw_null(mtx, "TODO");\
+	throw_null(mtx, "Матрица отсутствует");\
 \
 	return ((Mat *) mtx)->param;\
 }\
@@ -199,7 +218,7 @@ int fun(matrix mtx, unsigned * value)\
 \
 	try\
 	{\
-		throw_null(value, "TODO");\
+		throw_null(value, "Значение отсутствует");\
 		* value = my_fun(mtx);\
 	}\
 	catch(...)\
@@ -216,7 +235,7 @@ GET_INFO(matrix_number_of_channel, my_matrix_number_of_channel, channels())
 
 int my_matrix_element_type(matrix mtx)
 {
-	throw_null(mtx, "TODO");
+	throw_null(mtx, "Матрица отсутствует");
 
 	switch(((Mat *) mtx)->depth())
 	{
@@ -226,7 +245,7 @@ int my_matrix_element_type(matrix mtx)
 			return DOUBLE_ELEMENT;
 	}
 
-	throw_("TODO");
+	throw_("Некорректный тип канала");
 }
 
 int matrix_element_type(matrix mtx, int * value)
@@ -235,7 +254,7 @@ int matrix_element_type(matrix mtx, int * value)
 
 	try
 	{
-		throw_null(value, "TODO");
+		throw_null(value, "Значение отсутствует");
 		* value = my_matrix_element_type(mtx);
 	}
 	catch(...)
@@ -272,7 +291,7 @@ int matrix_pointer_to_data(matrix mtx, void ** ptr)
 
 	try
 	{
-		throw_null(mtx, "TODO");
+		throw_null(mtx, "Матрица отсутствует");
 
 		* ptr = (void *) ((Mat *) mtx)->data;
 	}
