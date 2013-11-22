@@ -122,7 +122,7 @@ int matrix_save_image(matrix mtx, const char * fname)
 		throw_if(__mtx->empty(), "Матрица не содержит данных");
 		throw_null(fname, "Путь и имя результирующего файла отсутствуют");
 
-		throw_if(! imwrite(fname, __mtx), "Не удалось сохранить изображение");
+		throw_if(! imwrite(fname, * __mtx), "Не удалось сохранить изображение");
 	}
 	catch(...)
 	{
@@ -182,7 +182,7 @@ int matrix_set_value(matrix mtx, const unsigned row, const unsigned column, cons
 #define SET_VALUE(type_ind, type)\
 case type_ind:\
 {\
-	 * ((type *) _mtx->data + _mtx->step[0] * row + _mtx->step[1] * column + channel) = * (type *) value;\
+	* ((type *) _mtx->data + _mtx->step[0] * row + _mtx->step[1] * column + channel) = * (type *) value;\
 \
 	break;\
 }
@@ -294,6 +294,44 @@ int matrix_pointer_to_data(matrix mtx, void ** ptr)
 		throw_null(mtx, "Матрица отсутствует");
 
 		* ptr = (void *) ((Mat *) mtx)->data;
+	}
+	catch(...)
+	{
+		ret = -1;
+	}
+
+	return ret;
+}
+
+int matrix_pointer_to_row(matrix mtx, const unsigned row, void ** ptr)
+{
+	int ret = 0;
+
+	try
+	{
+		Mat * _mtx = (Mat *) mtx;
+
+		throw_null(_mtx, "Матрица отсутствует");
+
+		switch(_mtx->depth())
+		{
+
+#define GET_ROW(type_ind, type)\
+case type_ind:\
+{\
+	* ptr = (void *) ((type *) _mtx->data + _mtx->step[0] * row); \
+\
+	break;\
+}
+
+			GET_ROW(CV_8U, uint8_t)
+			GET_ROW(CV_64F, double)
+
+			default:
+			{
+				throw_("Некорректный тип канала");
+			}
+		}
 	}
 	catch(...)
 	{

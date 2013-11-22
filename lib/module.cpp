@@ -45,6 +45,7 @@ CModule::CModule(const QString fname)
 	LOAD_VARIABLE("matrix_number_of_channel", matrix_number_of_channel, int (** fun_type)(matrix mtx, unsigned * value))
 	LOAD_VARIABLE("matrix_element_type", matrix_element_type, int (** fun_type)(matrix mtx, int * value))
 	LOAD_VARIABLE("matrix_pointer_to_data", matrix_pointer_to_data, int (** fun_type)(matrix mtx, void ** ptr));
+	LOAD_VARIABLE("matrix_pointer_to_row", matrix_pointer_to_row, int (** fun_type)(matrix mtx, const unsigned row, void ** ptr));
 	
 	// ############################################################################ 
 

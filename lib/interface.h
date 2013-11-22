@@ -32,7 +32,8 @@
 - matrix_width();
 - matrix_number_of_channel();
 - matrix_element_type();
-- matrix_pointer_to_data().
+- matrix_pointer_to_data();
+- matrix_pointer_to_row().
 
 Модуль <B>должен</B> выделять в функции init() и самостоятельно очищать в функции destroy() память под свои возвращаемые значения. Память под свои параметры модуль может самостоятельно выделять, а может и не выделять. В том случае, если модуль не выделяет память под свои параметры, он <B>ни коим образом не должен</B> управлять памятью, выделенной под его параметры.
 
@@ -159,6 +160,7 @@ extern "C"
 	EXPORT_VARIABLE int (* matrix_number_of_channel)(matrix mtx, unsigned * value);
 	EXPORT_VARIABLE int (* matrix_element_type)(matrix mtx, int * value);
 	EXPORT_VARIABLE int (* matrix_pointer_to_data)(matrix mtx, void ** ptr);
+	EXPORT_VARIABLE int (* matrix_pointer_to_row)(matrix mtx, const unsigned row, void ** ptr);
 
 #else
 
@@ -388,6 +390,21 @@ extern "C"
 	*/
 	/*! \cond HIDDEN_SYMBOLS */ HIDDEN /*! \endcond */
 	int matrix_pointer_to_data(matrix mtx, void ** ptr);
+
+	/*!
+	
+	\brief Получение указателя на область памяти, в которой хранится содержимое строки матрицы
+
+	\param mtx - описатель матрицы;
+	\param row - индекс строки матрицы;
+	\param ptr - указатель на указатель, в котором будет возвращен адрес области памяти, хранящей содержимое строки матрицы.
+
+	\return 0 - в случае успешного завершения операции;
+	\return <> 0 - в случае неудачного завершения операции.
+
+	*/
+	/*! \cond HIDDEN_SYMBOLS */ HIDDEN /*! \endcond */
+	int matrix_pointer_to_row(matrix mtx, const unsigned row, void ** ptr);
 
 #endif
 
