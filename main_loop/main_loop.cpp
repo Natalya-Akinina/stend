@@ -29,7 +29,7 @@ void CMainLoop::start(const QString src_fname, const QString dst_fname)
 		throw_if(! src.isOpened(), "TODO");
 
 		const double fps = src.get(CV_CAP_PROP_FPS);
-		VideoWriter dst(dst_fname.toLocal8Bit().constData(), CV_FOURCC_DEFAULT, fps, Size(src.get(CV_CAP_PROP_FRAME_WIDTH), src.get(CV_CAP_PROP_FRAME_HEIGHT))); // TODO Не работает
+		VideoWriter dst(dst_fname.toStdString(), CV_FOURCC_DEFAULT, fps, Size(src.get(CV_CAP_PROP_FRAME_WIDTH), src.get(CV_CAP_PROP_FRAME_HEIGHT))); // toLocal8Bit() почему-то выбрасывает segfault в Windows
 
 		throw_if(! dst.isOpened(), "TODO");
 
