@@ -45,7 +45,7 @@ void CDisplay::show_Mat(const Mat & src, const Mat & dst)
 
 void CDisplay::show_png(const QString & name_ru, const QString & fname)
 {
-	Mat img = imread(fname.toStdString());
+	Mat img = imread(fname.toLocal8Bit().constData());
 
 	throw_null(img.data, "Не удалось открыть png-файл");
 	imshow("Results", img);

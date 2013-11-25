@@ -286,7 +286,7 @@ LOAD_SET(load_script, unload_script, script_fname, script_window, script_window_
 
 LOAD_SET(load_src_video, unload_src_video, src_video_fname, src_video_window, src_video_window_title,
 	Mat frame;
-	VideoCapture video(__fname.toStdString());
+	VideoCapture video(__fname.toLocal8Bit().constData());
 
 	throw_if(! video.isOpened(), "Не удалось открыть файл с исходной видеопоследовательностью");
 	video.set(CV_CAP_PROP_POS_FRAMES, video.get(CV_CAP_PROP_FRAME_COUNT) / 2);

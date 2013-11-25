@@ -52,7 +52,7 @@ int CLua::run_module(lua_State * state)
 
 void CLua::load_script(const QString fname)
 {
-	throw_if(luaL_dofile(state, fname.toStdString().c_str()) != LUA_OK, "TODO");
+	throw_if(luaL_dofile(state, fname.toLocal8Bit().constData()) != LUA_OK, "TODO");
 }
 
 Mat * CLua::run(const Mat & src)

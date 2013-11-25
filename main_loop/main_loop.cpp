@@ -25,11 +25,11 @@ void CMainLoop::start(const QString src_fname, const QString dst_fname)
 
 		start();
 
-		VideoCapture src(src_fname.toStdString());
+		VideoCapture src(src_fname.toLocal8Bit().constData());
 		throw_if(! src.isOpened(), "TODO");
 
 		const double fps = src.get(CV_CAP_PROP_FPS);
-		VideoWriter dst(dst_fname.toStdString(), CV_FOURCC_DEFAULT, fps, Size(src.get(CV_CAP_PROP_FRAME_WIDTH), src.get(CV_CAP_PROP_FRAME_HEIGHT))); // TODO Не работает
+		VideoWriter dst(dst_fname.toLocal8Bit().constData(), CV_FOURCC_DEFAULT, fps, Size(src.get(CV_CAP_PROP_FRAME_WIDTH), src.get(CV_CAP_PROP_FRAME_HEIGHT))); // TODO Не работает
 
 		throw_if(! dst.isOpened(), "TODO");
 
