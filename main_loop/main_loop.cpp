@@ -51,9 +51,6 @@ void CMainLoop::start(const QString src_fname, const QString dst_fname)
 			CDisplay::show_Mat(src_frame, * dst_frame);
 			
 			CImage::clear();
-
-			if(counter == 10)
-				break; // TODO
 		}
 
 		stop();
