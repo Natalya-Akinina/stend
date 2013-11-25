@@ -75,7 +75,7 @@ matrix matrix_copy(matrix mtx)
 	try
 	{
 		throw_null(mtx, "Исходная матрица отсутствует")
-		throw_null(_mtx = (Mat *) matrix_create(my_matrix_height(mtx), my_matrix_width(mtx), my_matrix_number_of_channel(mtx), my_matrix_element_type(mtx)), "Не удалось создать матрицу");
+		throw_null(_mtx = (Mat *) matrix_create(my_matrix_height(mtx), my_matrix_width(mtx), my_matrix_number_of_channels(mtx), my_matrix_element_type(mtx)), "Не удалось создать матрицу");
 
 		* _mtx = ((Mat *) mtx)->clone();
 	}
@@ -231,7 +231,7 @@ int fun(matrix mtx, unsigned * value)\
 
 GET_INFO(matrix_height, my_matrix_height, rows)
 GET_INFO(matrix_width, my_matrix_width, cols)
-GET_INFO(matrix_number_of_channel, my_matrix_number_of_channel, channels())
+GET_INFO(matrix_number_of_channels, my_matrix_number_of_channels, channels())
 
 int my_matrix_element_type(matrix mtx)
 {

@@ -33,6 +33,8 @@ CModule::CModule(const QString fname)
 
 	LOAD_VARIABLE("image_create", image_create, image (** fun_type)(const unsigned height, const unsigned width, const unsigned ch_num))
 	LOAD_VARIABLE("image_delete", image_delete, int (** fun_type)(const image img))
+	LOAD_VARIABLE("image_copy", image_copy, image (** fun_type)(const image img));
+	LOAD_VARIABLE("matrix_to_image", matrix_to_image, image (** fun_type)(const matrix mtx));
 	LOAD_VARIABLE("matrix_create", matrix_create, matrix (** fun_type)(const unsigned height, const unsigned width, const unsigned ch_num, const int element_type));
 	LOAD_VARIABLE("matrix_delete", matrix_delete, int (** fun_type)(matrix mtx))
 	LOAD_VARIABLE("matrix_copy", matrix_copy, matrix (** fun_type)(matrix mtx))
@@ -42,7 +44,7 @@ CModule::CModule(const QString fname)
 	LOAD_VARIABLE("matrix_set_value", matrix_set_value, int (** fun_type)(matrix mtx, const unsigned row, const unsigned column, const unsigned channel, const void * value))
 	LOAD_VARIABLE("matrix_height", matrix_height, int (** fun_type)(matrix mtx, unsigned * value))
 	LOAD_VARIABLE("matrix_width", matrix_width, int (** fun_type)(matrix mtx, unsigned * value))
-	LOAD_VARIABLE("matrix_number_of_channel", matrix_number_of_channel, int (** fun_type)(matrix mtx, unsigned * value))
+	LOAD_VARIABLE("matrix_number_of_channels", matrix_number_of_channels, int (** fun_type)(matrix mtx, unsigned * value))
 	LOAD_VARIABLE("matrix_element_type", matrix_element_type, int (** fun_type)(matrix mtx, int * value))
 	LOAD_VARIABLE("matrix_pointer_to_data", matrix_pointer_to_data, int (** fun_type)(matrix mtx, void ** ptr));
 	LOAD_VARIABLE("matrix_pointer_to_row", matrix_pointer_to_row, int (** fun_type)(matrix mtx, const unsigned row, void ** ptr));

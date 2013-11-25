@@ -26,16 +26,6 @@ image image_create(const unsigned height, const unsigned width, const unsigned c
 	return _img;
 }
 
-image image_copy(const Mat & img)
-{
-	throw_if(img.depth() != CV_8U, "TODO");
-	
-	image ret = image_create(img.rows, img.cols, img.channels());
-	* (Mat *) ret->mat = img.clone();
-	
-	return ret;
-}
-
 int image_delete(const image img)
 {
 	const unsigned size = images.size();
@@ -50,6 +40,32 @@ int image_delete(const image img)
 	}
 
 	return 0;
+}
+
+image image_copy(const Mat & img)
+{
+	throw_if(img.depth() != CV_8U, "TODO");
+	
+	image ret = image_create(img.rows, img.cols, img.channels());
+	* (Mat *) ret->mat = img.clone();
+	
+	return ret;
+}
+
+image image_copy(const image img)
+{
+	return image_copy(* (Mat *) img->mat);
+}
+
+image matrix_to_image(const matrix mtx)
+{
+	image img;
+
+	throw_null(img = image_create(my_matrix_height(mtx), my_matrix_width(mtx), my_matrix_number_of_channels(mtx)), "Не удалось создать описатель изображения");
+
+	* ((Mat *) img->mat) = ((Mat *) mtx)->clone();
+
+	return img;
 }
 
 // ############################################################################ 
