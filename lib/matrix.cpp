@@ -16,6 +16,12 @@ int depth_to_int(const int depth)
 
 			break;
 		}
+		case CV_16U:
+		{
+			type = UNSIGNED_INT_16_BIT_ELEMENT;
+
+			break;
+		}
 		case CV_64F:
 		{
 			type = DOUBLE_ELEMENT;
@@ -44,6 +50,12 @@ matrix matrix_create(const unsigned height, const unsigned width, const unsigned
 			case UNSIGNED_INT_8_BIT_ELEMENT:
 			{
 				throw_null(mtx = new Mat(height, width, CV_8UC(ch_num)), "Не удалось создать восьмибитную матрицу");
+
+				break;
+			};
+			case UNSIGNED_INT_16_BIT_ELEMENT:
+			{
+				throw_null(mtx = new Mat(height, width, CV_16UC(ch_num)), "Не удалось создать шестнадцатибитную матрицу");
 
 				break;
 			};
@@ -94,7 +106,7 @@ matrix matrix_load_image(const char * fname)
 	
 	try
 	{
-		Mat img = imread(fname);
+		Mat img = imread(fname, CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_COLOR);
 
 		throw_if(img.empty(), "Не удалось загрузить изображение");
 		throw_null(mtx = (Mat *) matrix_create(img.rows, img.cols, img.channels(), depth_to_int(img.depth())), "Не удалось создать матрицу");
@@ -152,6 +164,7 @@ case type_ind:\
 }
 
 			GET_VALUE(CV_8U, uint8_t)
+			GET_VALUE(CV_16U, uint16_t)
 			GET_VALUE(CV_64F, double)
 
 			default:
@@ -188,6 +201,7 @@ case type_ind:\
 }
 
 			SET_VALUE(CV_8U, uint8_t)
+			SET_VALUE(CV_16U, uint16_t)
 			SET_VALUE(CV_64F, double)
 
 			default:
@@ -241,6 +255,8 @@ int my_matrix_element_type(matrix mtx)
 	{
 		case CV_8U:
 			return UNSIGNED_INT_8_BIT_ELEMENT;
+		case CV_16U:
+			return UNSIGNED_INT_16_BIT_ELEMENT;
 		case CV_64F:
 			return DOUBLE_ELEMENT;
 	}
@@ -325,6 +341,7 @@ case type_ind:\
 }
 
 			GET_ROW(CV_8U, uint8_t)
+			GET_ROW(CV_16U, uint16_t)
 			GET_ROW(CV_64F, double)
 
 			default:

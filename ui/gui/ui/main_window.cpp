@@ -216,6 +216,8 @@ void CMainWindow::stop_experiment()
 	toggle_experiment_action->setToolTip(tip);
 	toggle_experiment_action->setStatusTip(tip);
 	toggle_experiment_action->setEnabled(is_experiment_may_be_run);
+
+	// TODO Должен вызываться main_loop.stop() (чтобы цикл в main_loop остановился)
 }
 
 void CMainWindow::toggle_experiment()

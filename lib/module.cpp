@@ -120,6 +120,7 @@ case MY_TYPE:\
 			SET_PARAM(BOOLEAN_TYPE, int, lua_toboolean);
 			SET_PARAM(MATRIX_TYPE, matrix, lua_touserdata);
 			SET_PARAM(IMAGE_TYPE, image, lua_touserdata);
+			SET_PARAM(VOID_POINTER_TYPE, void *, lua_touserdata);
 		}
 
 		v++;
@@ -151,6 +152,7 @@ case MY_TYPE:\
 			GET_RETURN_VALUES(BOOLEAN_TYPE, int, lua_pushboolean);
 			GET_RETURN_VALUES(MATRIX_TYPE, matrix, lua_pushlightuserdata);
 			GET_RETURN_VALUES(IMAGE_TYPE, image, lua_pushlightuserdata);
+			GET_RETURN_VALUES(VOID_POINTER_TYPE, void *, lua_pushlightuserdata);
 		}
 
 		v++;

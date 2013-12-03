@@ -77,6 +77,9 @@ extern "C"
 	//! \brief Целое, 8-ми битное, беззнаковое (uint8_t)
 	#define UNSIGNED_INT_8_BIT_ELEMENT 0
 
+	//! \brief Целое, 16-ти битное, беззнаковое (uint16_t)
+	#define UNSIGNED_INT_16_BIT_ELEMENT 2
+
 	//! \brief Вещественное двойной точности (double)
 	#define DOUBLE_ELEMENT 1
 
@@ -135,6 +138,9 @@ extern "C"
 
 	//! \brief Изображение (image)
 	#define IMAGE_TYPE 5
+
+	//! \brief Указатель на произвольную область памяти (void *)
+	#define VOID_POINTER_TYPE 6
 
 	//@}
 	// ############################################################################ 
@@ -246,7 +252,7 @@ extern "C"
 	\return описатель созданной матрицы - в случае ее успешного создания;
 	\return NULL - в случае, если матрицу создать не удалось.
 
-	\sa UNSIGNED_INT_8_BIT_ELEMENT, DOUBLE_ELEMENT
+	\sa UNSIGNED_INT_8_BIT_ELEMENT, UNSIGNED_INT_16_BIT_ELEMENT, DOUBLE_ELEMENT
 
 	*/
 	/*! \cond HIDDEN_SYMBOLS */ HIDDEN /*! \endcond */
@@ -298,7 +304,7 @@ extern "C"
 
 	\param mtx - описатель матрицы;
 	\param row - номер строки;
-	\param column - номер стоблца;
+	\param column - номер столбца;
 	\param channel - номер канала (нумерация от 0);
 	\param value - указатель на переменную, в которой будет сохранено получаемое значение.
 
@@ -388,7 +394,7 @@ extern "C"
 	\return 0 - в случае успешного завершения операции;
 	\return <> 0 - в случае неудачного завершения операции.
 
-	\sa UNSIGNED_INT_8_BIT_ELEMENT, DOUBLE_ELEMENT
+	\sa UNSIGNED_INT_8_BIT_ELEMENT, UNSIGNED_INT_16_BIT_ELEMENT, DOUBLE_ELEMENT
 
 	*/
 	/*! \cond HIDDEN_SYMBOLS */ HIDDEN /*! \endcond */

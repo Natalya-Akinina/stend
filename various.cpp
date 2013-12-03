@@ -17,6 +17,7 @@ void message_handler(QtMsgType type, const QMessageLogContext & context, const Q
 		case QtDebugMsg:
 		{
 			__msg.prepend("[ TODO ]");
+			printf("%s\n", __msg.toLocal8Bit().constData());
 
 			break;
 		}
@@ -31,19 +32,20 @@ void message_handler(QtMsgType type, const QMessageLogContext & context, const Q
 		case QtCriticalMsg:
 		{
 			__msg.prepend("[ Critical ]");
+			message(__msg);
 
 			break;
 		}
 		case QtFatalMsg:
 		{
 			__msg.prepend("[ Fatal ]");
+			message(__msg);
+
 			is_abort = true;
 
 			break;
 		}
     }
-
-	message(__msg);
 
 	if(is_abort)
 		abort();
