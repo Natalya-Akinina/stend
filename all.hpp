@@ -14,41 +14,51 @@
 #include <QDialog>
 #include <QMessageBox>
 #include <QXmlStreamReader>
+#include <QMenu>
+#include <QToolButton>
+#include <QSplashScreen>
+#include <QtTest>
+#include <QFileDialog>
+#include <QSyntaxHighlighter>
+#include <QListWidget>
+#include <QTextBrowser>
+#include <QMdiSubWindow>
+#include <QResource>
+#include <QLabel>
 #include <lua.hpp>
 #include <opencv2/opencv.hpp>
 
 using namespace std;
 using namespace cv;
 
+// ############################################################################ 
+// Вывод сообщений
+
+void message(const QString msg);
+void message_handler(QtMsgType type, const QMessageLogContext & context, const QString & msg);
+
+// ############################################################################ 
+// TODO
+
+#define qTODO qDebug
+
 // ############################################################################
 // Исключения
 
-#define throw_ \
+#define throw_(msg) \
 {\
-	fprintf(stderr, "[Exception] File %s, line %d\n", __FILE__, __LINE__);\
+	qCritical() << QObject::trUtf8(msg);\
 	throw 1;\
 };
 
-#define throw_TODO \
-{\
-	fprintf(stderr, "TODO ");\
-	throw_;\
-};
-
-#define throw_if(condition) \
+#define throw_if(condition, msg) \
 {\
 	if((condition))\
-		throw_;\
+		throw_(msg);\
 }
 
-#define throw_null(pointer) \
-	throw_if((pointer) == NULL)
-
-// ############################################################################
-// Отладочная печать
-
-int printf_TODO(const char * format, ...);
-int printf_error(const char * format, ...);
+#define throw_null(pointer, msg) \
+	throw_if((pointer) == NULL, msg)
 
 // ############################################################################ 
 // Выделение памяти

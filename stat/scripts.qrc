@@ -1,0 +1,11 @@
+
+<RCC>
+
+	<qresource>
+	
+		<file alias="scripts/sec_per_frame">scripts/sec_per_frame.r</file>
+
+	</qresource>
+
+</RCC>
+

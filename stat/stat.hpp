@@ -3,23 +3,66 @@
 #define STAT_HPP
 
 #include "all.hpp"
-#include "config.hpp"
-#include "lib/lua.hpp"
-#include "lib/image.hpp"
+#include "main_loop/display.hpp"
 
-class CStat
+class CSecPerFrameStat;
+
+class CMeasure
 {
-	CLua & _lua;
-	vector<double> sec_per_frame;
+	protected:
+
+		QList<double> __sec_per_frame;
+
+		friend class CSecPerFrameStat;
 
 	public:
 
-		CStat(CLua & lua);
+		CMeasure();
+		~CMeasure();
 
-		void run(const QString src_fname, const QString dst_fname);
+		void reset();
+		void operator()(const double sec_per_frame);
+};
 
-		void display_sec_per_frame();
-		void save_sec_per_frame(const QString fname);
+class CStat : public QObject
+{
+	Q_OBJECT
+
+	protected:
+
+		const CMeasure & __measure;
+
+		virtual void save_data(QFile & fl) = 0;
+
+	public:
+
+		CStat(CMeasure & measure);
+		virtual ~CStat();
+
+		virtual QString name_en() const = 0;
+		virtual QString name_ru() const = 0;
+
+	public slots:
+
+		virtual void display();
+		void save(const QString fname = "");
+};
+
+class CSecPerFrameStat : public CStat
+{
+	Q_OBJECT
+
+	protected:
+
+		void save_data(QFile & fl);
+
+	public:
+
+		CSecPerFrameStat(CMeasure & measure);
+		~CSecPerFrameStat();
+
+		QString name_en() const { return "sec_per_frame"; };
+		QString name_ru() const { return trUtf8("Время выполнения алгоритма на кадре"); };
 };
 
 #endif

@@ -4,41 +4,55 @@
 #include "lib/module.hpp"
 #include "lib/matrix.hpp"
 #include "lib/image.hpp"
-#include "stat/stat.hpp"
+#include "main_loop/main_loop.hpp"
+#include "main_loop/display.hpp"
 
-int main(const int argc, const char * argv[])
+int main(int argc, char * argv[])
 {
 	int ret = 0;
 
 	try
 	{
-		throw_if(argc != 5);
+		qInstallMessageHandler(message_handler);
+		Q_INIT_RESOURCE(scripts);
 
-		CConfig::load(argv[1]);
+		throw_if(argc != 4, "Недостаточное количество аргументов");
+
+		const QString script_fname = argv[1];
+		const QString src_video_fname = argv[2];
+		const QString dst_video_fname = argv[3];
+
+		// ############################################################################ 
+
+		CDisplay::init();
 		CMatrix::init();
 		CImage::init();
 
 		CLua lua;
-		CStat stat(lua);
+		CMainLoop main_loop(lua);
 
-		lua.load_module("demo_image");
-		// lua.load_module("demo_matrix");
+		lua.load_module("/home/amv/disser/project/super_stend/src/modules/build/demo_image/libdemo_image.so");
 
-		lua.load_script(argv[2]);
+		lua.load_script(script_fname);
+		main_loop.start(src_video_fname, dst_video_fname);
 
-		stat.run(argv[3], argv[4]);
-
-		// stat.save_sec_per_frame("../../trash/sec_per_frame");
-		stat.display_sec_per_frame();
+		main_loop.stats["sec_per_frame"]->display();
+		main_loop.stats["sec_per_frame"]->save("/home/amv/trash/sec_per_frame");
 	}
 	catch(...)
 	{
 		ret = -1;
 	}
 
+	CDisplay::destroy();
 	CMatrix::destroy();
 	CImage::destroy();
 
 	return ret;
+}
+
+void message(const QString msg)
+{
+	fprintf(stderr, "%s\n", msg.toLocal8Bit().constData());
 }
 
