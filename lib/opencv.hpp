@@ -1,6 +1,6 @@
 
-#ifndef _OPENCV_HPP
-#define _OPENCV_HPP
+#ifndef __OPENCV_HPP
+#define __OPENCV_HPP
 
 #include "all.hpp"
 #include "lib/lua.hpp"
