@@ -47,5 +47,17 @@ int lua_Canny (lua_State * state);
 int lua_Sobel (lua_State * state);
 int lua_Scharr (lua_State * state);
 
+int lua_filter2D (lua_State * state);
+int lua_integral (lua_State * state);
+int lua_Laplacian (lua_State * state);
+int lua_mulSpectrums (lua_State * state);
+int lua_sepFilter2D (lua_State * state);
+int lua_setTo (lua_State * state);
+int lua_clone (lua_State * state);
+int lua_Size (lua_State * state);
+int lua_imread (lua_State * state);
+int lua_imwrite (lua_State * state);
+int lua_eigen (lua_State * state);
+
 #endif
 

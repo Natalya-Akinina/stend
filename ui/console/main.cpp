@@ -31,7 +31,7 @@ int main(int argc, char * argv[])
 		CLua lua;
 		CMainLoop main_loop(lua);
 
-		lua.load_module("/home/amv/disser/project/super_stend/src/modules/build/demo_image/libdemo_image.so");
+		lua.load_module("/home/natalya/Science/super_stend/src/stend_modules/build/demo_image/libdemo_image.so");
 
 		lua.load_script(script_fname);
 		main_loop.start(src_video_fname, dst_video_fname);

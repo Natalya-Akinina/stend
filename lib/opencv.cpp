@@ -45,6 +45,17 @@ void opencv_register(lua_State * state)
 	lua_register(state, "Canny", lua_Canny);
 	lua_register(state, "Sobel", lua_Sobel);
 	lua_register(state, "Scharr", lua_Scharr);
+	lua_register(state, "filter2D", lua_filter2D);
+	lua_register(state, "integral", lua_integral);
+	lua_register(state, "Laplacian", lua_Laplacian);
+	lua_register(state, "mulSpectrums", lua_mulSpectrums);
+	lua_register(state, "sepFilter2D", lua_sepFilter2D);
+	lua_register(state, "setTo", lua_setTo);
+	lua_register(state, "clone", lua_clone);
+	lua_register(state, "Size", lua_Size);
+	lua_register(state, "imread", lua_imread);
+	lua_register(state, "imwrite", lua_imwrite);
+	lua_register(state, "eigen", lua_eigen);
 	
 }
 
@@ -401,46 +412,32 @@ int lua_dct(lua_State * state)
 {
   
 	int ret = 1;
-	matrix dst_mat;
+	image dst_img;
+	Mat * dst;
+	Mat * op_1;
+	Mat op_gray,op_float, res;
 
 	try
 	{
-		Mat * op_1 = CImage::to_Mat((s_image *) lua_touserdata(state, 1));
+		throw_null(op_1 = CImage::to_Mat((s_image *) lua_touserdata(state, 1)), "TODO");
+		throw_null(dst_img = image_create(op_1->rows, op_1->cols, op_1->channels()), "TODO");
+		dst = CImage::to_Mat(dst_img);
+		
+		cvtColor (* op_1, op_gray, CV_RGB2GRAY);
+		op_float = Mat_<float>(op_gray);
+		dct (op_float, res, DCT_ROWS);
+		* dst = Mat_<uint8_t>(res);
 
-		throw_null(dst_mat = matrix_create(op_1->rows, op_1->cols, op_1->channels(), DOUBLE_ELEMENT), "TODO");
-
-		//dct(* op_1, *(Mat*) dst_mat);
-		lua_pushlightuserdata(state, dst_mat);
+		lua_pushlightuserdata(state, dst_img);
 	}
 	catch(...)
 	{
-		matrix_delete(dst_mat);
+		image_delete(dst_img);
 
 		ret = 0;
 	}
 
 	return ret;
-  /*
-	int ret = 1;
-	matrix dst_mat;
-	Mat * op_1;
-
-	try
-	{
-		throw_null(op_1 = CImage::to_Mat((s_image *) lua_touserdata(state, 1)), "TODO");
-		dst_mat = matrix_copy (*op_1);
-		
-		dct(* op_1,*(Mat *) dst_mat);
-		lua_pushlightuserdata(state, dst_mat);
-	}
-	catch(...)
-	{
-		matrix_delete(dst_mat);
-
-		ret = 0;
-	}
-
-	return ret;*/
 }
 
 //Обратное дискретное косинусное преобразование
@@ -448,50 +445,63 @@ int lua_idct(lua_State * state)
 {
   
 	int ret = 1;
-	matrix dst_mat;
 	image dst_img;
+	Mat * dst;
 	Mat * op_1;
+	Mat op_float, res;
 
 	try
 	{
-		throw_null(op_1 = (Mat *) lua_touserdata(state, 1), "TODO");
-		throw_null(dst_mat = matrix_create(op_1->rows, op_1->cols, op_1->channels(), UNSIGNED_INT_8_BIT_ELEMENT), "TODO");
-		//dst_mat = matrix_copy (op_1);
-
-		//idct(*op_1, *(Mat *) dst_mat);
-		dst_img = matrix_to_image (dst_mat);
+		throw_null(op_1 = CImage::to_Mat((s_image *) lua_touserdata(state, 1)), "TODO");
+		throw_null(dst_img = image_create(op_1->rows, op_1->cols, op_1->channels()), "TODO");
+		dst = CImage::to_Mat(dst_img);
+		
+		op_float = Mat_<float>(* op_1);
+		dct (op_float, res, DCT_ROWS);
+		* dst = Mat_<uint8_t>(res);
+		
 		lua_pushlightuserdata(state, dst_img);
 	}
 	catch(...)
 	{
-		matrix_delete(dst_mat);
-
+		image_delete(dst_img);
 		ret = 0;
 	}
 
 	return ret;
 }
 
-//Дискретное преобразование Фурье todo matrix возвр отладить
+//Дискретное преобразование Фурье
 int lua_dft(lua_State * state)
 {
   
   
 	int ret = 1;
-	matrix dst_mat;
+	image dst_img;
+	Mat * dst;
 	Mat * op_1;
+	Mat op_gray, I, dst1;
+	vector <Mat> res;
 
 	try
 	{
 		throw_null(op_1 = CImage::to_Mat((s_image *) lua_touserdata(state, 1)), "TODO");
-		dst_mat = matrix_copy (op_1);
+		throw_null(dst_img = image_create(op_1->rows, op_1->cols, op_1->channels()), "TODO");
+		dst = CImage::to_Mat(dst_img);
+		
+		cvtColor (* op_1, op_gray, CV_RGB2GRAY);
+		vector <Mat> ch_I = {Mat_<float>(op_gray), Mat::zeros(op_gray.size(), CV_32F)};
+		merge(ch_I,I);
+		
 
-		dft(* op_1, * (Mat*) dst_mat);
-		lua_pushlightuserdata(state, dst_mat);
+		dft(I, dst1);
+		split (dst1, res);
+		* dst = Mat_<uint8_t>(res[0]);
+		lua_pushlightuserdata(state, dst_img);
 	}
 	catch(...)
 	{
-		matrix_delete(dst_mat);
+		image_delete(dst_img);
 
 		ret = 0;
 	}
@@ -499,27 +509,35 @@ int lua_dft(lua_State * state)
 	return ret;
 }
 
-//Обратное дискретное преобразование Фурье todo matrix принимать на вход отладить
+//Обратное дискретное преобразование Фурье
 int lua_idft(lua_State * state)
 {
   
 	int ret = 1;
-	matrix dst_mat;
 	image dst_img;
+	Mat * dst;
 	Mat * op_1;
+	Mat op_gray, I, dst1;
+	vector <Mat> res;
 
 	try
 	{
-		throw_null(op_1 = (Mat *) lua_touserdata(state, 1), "TODO");
-		dst_mat = matrix_copy (op_1);
+		throw_null(op_1 = CImage::to_Mat((s_image *) lua_touserdata(state, 1)), "TODO");
+		throw_null(dst_img = image_create(op_1->rows, op_1->cols, op_1->channels()), "TODO");
+		dst = CImage::to_Mat(dst_img);
+		
+		op_gray = * op_1;
+		vector <Mat> ch_I = {Mat_<float>(op_gray), Mat::zeros(op_gray.size(), CV_32F)};
+		merge(ch_I,I);
 
-		idft(* op_1, * (Mat *) dst_mat);
-		dst_img = matrix_to_image (dst_mat);
+		idft (I, dst1);
+		split (dst1, res);
+		* dst = Mat_<uint8_t>(res[0]);
 		lua_pushlightuserdata(state, dst_img);
 	}
 	catch(...)
 	{
-		matrix_delete(dst_mat);
+		image_delete(dst_img);
 
 		ret = 0;
 	}
@@ -1016,7 +1034,7 @@ int lua_cvtColor (lua_State * state)
 	int ret = 1;
 	image dst_img;
 	int type;
-	int type_color [24] = {CV_BGR2XYZ, CV_RGB2XYZ, CV_XYZ2BGR, CV_XYZ2RGB, CV_BGR2YCrCb, CV_RGB2YCrCb, CV_YCrCb2BGR, CV_YCrCb2RGB, CV_BGR2HSV, CV_RGB2HSV, CV_HSV2BGR, CV_HSV2RGB, CV_BGR2HLS, CV_RGB2HLS, CV_HLS2BGR, CV_HLS2RGB, CV_BGR2Lab, CV_RGB2Lab, CV_Lab2BGR, CV_Lab2RGB, CV_BGR2Luv, CV_RGB2Luv, CV_Luv2BGR, CV_Luv2RGB};
+	vector <int> type_color = {CV_RGB2GRAY, CV_GRAY2RGB,CV_BGR2XYZ, CV_RGB2XYZ, CV_XYZ2BGR, CV_XYZ2RGB, CV_BGR2YCrCb, CV_RGB2YCrCb, CV_YCrCb2BGR, CV_YCrCb2RGB, CV_BGR2HSV, CV_RGB2HSV, CV_HSV2BGR, CV_HSV2RGB, CV_BGR2HLS, CV_RGB2HLS, CV_HLS2BGR, CV_HLS2RGB, CV_BGR2Lab, CV_RGB2Lab, CV_Lab2BGR, CV_Lab2RGB, CV_BGR2Luv, CV_RGB2Luv, CV_Luv2BGR, CV_Luv2RGB};
 	Mat * dst;
 
 	try
@@ -1107,7 +1125,7 @@ int lua_Canny (lua_State * state)
 	image dst_img;
 	int size;
 	double min, max;
-	Mat * dst,  op_2;
+	Mat * dst;
 
 	try
 	{
@@ -1118,8 +1136,7 @@ int lua_Canny (lua_State * state)
 
 		throw_null(dst_img = image_create(op_1->rows, op_1->cols, op_1->channels()), "TODO");
 		dst = CImage::to_Mat(dst_img);
-		cvtColor(* op_1, op_2, CV_RGB2GRAY);// 3 канала в 1
-		Canny(op_2, * dst, min, max, size);
+		Canny(* op_1, * dst, min, max, size);
 
 		lua_pushlightuserdata(state, dst_img);
 	}
@@ -1148,6 +1165,7 @@ int lua_Scharr (lua_State * state)
 	return Sobel_Scharr (state, CV_SCHARR);
 }
 
+//
 int Sobel_Scharr (lua_State * state, int type)
 {
 	int ret = 1;
@@ -1166,6 +1184,310 @@ int Sobel_Scharr (lua_State * state, int type)
 		Sobel(* op_1, * dst, CV_8U, xorder, yorder, type);
 
 		lua_pushlightuserdata(state, dst_img);
+	}
+	catch(...)
+	{
+		image_delete(dst_img);
+
+		ret = 0;
+	}
+
+	return ret;
+}
+
+//Свертка изображения с ядром
+int lua_filter2D (lua_State * state)
+{
+	int ret = 1;
+	Mat * dst;
+	image dst_img;
+	
+	try
+	{
+		
+		Mat * op_1 = CImage::to_Mat((s_image *) lua_touserdata(state, 1));
+		Mat * op_2 = CMatrix::to_Mat((matrix) lua_touserdata(state, 2));
+		throw_null(dst_img = image_create(op_1->rows, op_1->cols, op_1->channels()), "TODO");
+		dst = CImage::to_Mat(dst_img);
+		filter2D (* op_1, * dst, CV_8U, * op_2);
+
+		lua_pushlightuserdata(state, dst_img);
+	}
+	catch(...)
+	{
+		image_delete(dst_img);
+
+		ret = 0;
+	}
+
+	return ret;
+}
+
+//Интегрирование изображения
+int lua_integral (lua_State * state)
+{
+	int ret = 1;
+	Mat * dst;
+	image dst_img;
+	
+	try
+	{
+		
+		Mat * op_1 = CImage::to_Mat((s_image *) lua_touserdata(state, 1));
+		throw_null(dst_img = image_create((op_1->rows)+1, (op_1->cols)+1, op_1->channels()), "TODO");
+		dst = CImage::to_Mat(dst_img);
+		integral(* op_1, * dst);
+
+		lua_pushlightuserdata(state, dst_img);
+	}
+	catch(...)
+	{
+		image_delete(dst_img);
+
+		ret = 0;
+	}
+
+	return ret;
+}
+
+//Лапласиан изображения
+int lua_Laplacian (lua_State * state)
+{
+	int ret = 1;
+	int size;
+	Mat * dst;
+	image dst_img;
+
+	try
+	{
+		Mat * op_1 = CImage::to_Mat((s_image *) lua_touserdata(state, 1));
+		size = lua_tointeger(state, 2);
+
+		throw_null(dst_img = image_create(op_1->rows, op_1->cols, op_1->channels()), "TODO");
+		dst = CImage::to_Mat(dst_img);
+		Laplacian(* op_1, * dst, size);
+
+		lua_pushlightuserdata(state, dst_img);
+	}
+	catch(...)
+	{
+		image_delete(dst_img);
+
+		ret = 0;
+	}
+
+	return ret;
+}
+
+//Поэлементное умножение двух спектров Фурье
+int lua_mulSpectrums (lua_State * state)
+{
+	int ret = 1;
+	Mat * dst;
+	image dst_img;
+
+	try
+	{
+		Mat * op_1 = CImage::to_Mat((s_image *) lua_touserdata(state, 1));
+		Mat * op_2 = CImage::to_Mat((s_image *) lua_touserdata(state, 2));
+
+		throw_null(dst_img = image_create(op_1->rows, op_1->cols, op_1->channels()), "TODO");
+		dst = CImage::to_Mat(dst_img);
+		mulSpectrums(* op_1, * op_2, * dst, DFT_ROWS);
+
+		lua_pushlightuserdata(state, dst_img);
+	}
+	catch(...)
+	{
+		image_delete(dst_img);
+
+		ret = 0;
+	}
+
+	return ret;
+}
+
+//Линейная фильтрация
+int lua_sepFilter2D (lua_State * state)
+{
+	int ret = 1;
+	Mat * dst;
+	image dst_img;
+	
+	try
+	{
+		
+		Mat * op_1 = CImage::to_Mat((s_image *) lua_touserdata(state, 1));
+		Mat * kernalX = CMatrix::to_Mat((matrix) lua_touserdata(state, 2));
+		Mat * kernalY = CMatrix::to_Mat((matrix) lua_touserdata(state, 3));
+		throw_null(dst_img = image_create(op_1->rows, op_1->cols, op_1->channels()), "TODO");
+		dst = CImage::to_Mat(dst_img);
+		sepFilter2D (* op_1, * dst, CV_8U, * kernalX, * kernalY);
+
+		lua_pushlightuserdata(state, dst_img);
+	}
+	catch(...)
+	{
+		image_delete(dst_img);
+
+		ret = 0;
+	}
+
+	return ret;
+}
+
+//Устанавливает все или некоторые элементы матрицы до указанного значения
+int lua_setTo (lua_State * state)
+{
+	int ret = 0;
+	int value;
+	
+	try
+	{
+		
+		Mat * op_1 = CImage::to_Mat((s_image *) lua_touserdata(state, 1));
+		value = lua_tointeger(state, 2);
+		op_1->setTo(value);
+	}
+	catch(...)
+	{
+		;
+	}
+
+	return ret;
+}
+
+//Копирование изображения
+int lua_clone (lua_State * state)
+{
+	int ret = 1;
+	Mat * dst;
+	image dst_img;
+	
+	try
+	{
+		
+		Mat * op_1 = CImage::to_Mat((s_image *) lua_touserdata(state, 1));
+		throw_null(dst_img = image_create(op_1->rows, op_1->cols, op_1->channels()), "TODO");
+		dst = CImage::to_Mat(dst_img);
+		* dst = op_1->clone();
+
+		lua_pushlightuserdata(state, dst_img);
+	}
+	catch(...)
+	{
+		image_delete(dst_img);
+
+		ret = 0;
+	}
+
+	return ret;
+}
+
+//
+int lua_Size (lua_State * state)
+{
+	int ret = 3;
+	int cols, rows, ch;
+	
+	try
+	{
+		
+		Mat * op_1 = CImage::to_Mat((s_image *) lua_touserdata(state, 1));
+		cols = op_1->cols;
+		rows = op_1->rows;
+		ch = op_1->channels();
+		lua_pushinteger(state, rows);
+		lua_pushinteger(state, cols);
+		lua_pushinteger(state, ch);
+		
+	}
+	catch(...)
+	{
+		ret = 0;
+	}
+
+	return ret;
+}
+
+//
+int lua_imread (lua_State * state)
+{
+	int ret = 1;
+	matrix dst = NULL;
+	image dst_img = NULL;
+	
+	try
+	{
+		char * name = (char *) lua_tostring(state, 1);
+		throw_null (dst = matrix_load_image (name), "TODO");
+		throw_null (dst_img = matrix_to_image(dst), "TODO");
+		
+		lua_pushlightuserdata(state, dst_img);
+	}
+	catch(...)
+	{
+		image_delete(dst_img);
+		matrix_delete(dst);
+
+		ret = 0;
+	}
+
+	return ret;
+	
+}
+
+//
+int lua_imwrite (lua_State * state)
+{
+	int ret = 0;
+	
+	try
+	{
+		Mat * op_1 = CImage::to_Mat((s_image *) lua_touserdata(state, 2));
+		char * name = (char *) lua_tostring(state, 1);
+		
+		imwrite (name, * op_1);
+	}
+	catch(...)
+	{
+		;
+	}
+
+	return ret;
+}
+
+//
+int lua_eigen (lua_State * state)
+{
+	int ret = 1;
+	Mat * dst;
+	Mat op_transp, op, op_2, min_max, dst1;
+	image dst_img;
+	double m;
+	
+	try
+	{
+		
+		Mat * op_1 = CImage::to_Mat((s_image *) lua_touserdata(state, 1));
+		throw_null(dst_img = image_create(op_1->rows, op_1->cols, op_1->channels()), "TODO");
+		dst = CImage::to_Mat(dst_img);
+		op_1->copyTo(op);
+		op_1->copyTo(op_2);
+		op_transp = op.t();
+		compare(op_transp, op, min_max, CMP_EQ);
+		minMaxLoc(min_max, & m);
+		printf ("%f \n", m);
+		
+		if (m == 255)
+		{	
+			op_2 = Mat_<float>(op);
+			//eigen(op_2, dst1, -1, -1);
+			dst1 = op_2;
+			* dst = Mat_<uint8_t>(dst1);
+			lua_pushlightuserdata(state, dst_img);
+		}
+		
 	}
 	catch(...)
 	{
