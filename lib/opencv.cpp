@@ -55,7 +55,6 @@ void opencv_register(lua_State * state)
 	lua_register(state, "Size", lua_Size);
 	lua_register(state, "imread", lua_imread);
 	lua_register(state, "imwrite", lua_imwrite);
-	lua_register(state, "eigen", lua_eigen);
 	
 }
 
@@ -684,6 +683,7 @@ int lua_matrix_create (lua_State * state)
   
 	int ret = 1;
 	matrix dst_mat;
+	int type [3] = {UNSIGNED_INT_8_BIT_ELEMENT, UNSIGNED_INT_16_BIT_ELEMENT, DOUBLE_ELEMENT};
 
 	try
 	{
@@ -693,7 +693,8 @@ int lua_matrix_create (lua_State * state)
 		ch = lua_tointeger(state, 3);
 		t = lua_tointeger(state, 4);
 		
-		throw_null(dst_mat = matrix_create(h, w, ch, t), "TODO");
+		
+		throw_null(dst_mat = matrix_create(h, w, ch, type[t]), "TODO");
 		lua_pushlightuserdata(state, dst_mat);
 	}
 	catch(...)
@@ -724,7 +725,7 @@ int lua_matrix_delete (lua_State * state)
 	return ret;
 }
 
-//Получение значения элемента матрицы  доделать по типам чисел
+//Получение значения элемента матрицы
 int lua_matrix_get_value (lua_State * state)
 {
   
@@ -739,6 +740,7 @@ int lua_matrix_get_value (lua_State * state)
 		r = lua_tointeger(state, 2);
 		c = lua_tointeger(state, 3);
 		ch = lua_tointeger(state, 4);
+		
 		
 		matrix_element_type (dst_mat, & t);
 		
@@ -778,7 +780,7 @@ int lua_matrix_get_value (lua_State * state)
   
 }
 
-//Установ значения элемента матрицы доделать по типам чисел
+//Установ значения элемента матрицы
 int lua_matrix_set_value (lua_State * state)
 {
   
@@ -851,7 +853,7 @@ int lua_image_get_value (lua_State * state)
 
 		matrix_get_value (op_1, r, c, ch, (void *) & res);
 
-		lua_pushnumber (state, res);
+		lua_pushinteger (state, res);
 	}
 	catch(...)
 	{
@@ -877,7 +879,7 @@ int lua_image_set_value (lua_State * state)
 		r = lua_tointeger(state, 2);
 		c = lua_tointeger(state, 3);
 		ch = lua_tointeger(state, 4);
-		value = lua_tonumber(state, 5);
+		value = lua_tointeger(state, 5);
 		
 		matrix_set_value (op_1, r, c, ch, (void *) & value);
 
@@ -1150,7 +1152,7 @@ int lua_Canny (lua_State * state)
 	return ret;
 }
 
-// оператор Собеля.
+// оператор Собеля
 int lua_Sobel (lua_State * state)
 {
 	int size;
@@ -1336,7 +1338,7 @@ int lua_sepFilter2D (lua_State * state)
 	return ret;
 }
 
-//Устанавливает все или некоторые элементы матрицы до указанного значения
+//Устанавливает все элементы матрицы до указанного значения
 int lua_setTo (lua_State * state)
 {
 	int ret = 0;
@@ -1384,7 +1386,7 @@ int lua_clone (lua_State * state)
 	return ret;
 }
 
-//
+//Получение значений ширины, высоты и количества каналов
 int lua_Size (lua_State * state)
 {
 	int ret = 3;
@@ -1410,7 +1412,7 @@ int lua_Size (lua_State * state)
 	return ret;
 }
 
-//
+//Чтение из памяти
 int lua_imread (lua_State * state)
 {
 	int ret = 1;
@@ -1437,7 +1439,7 @@ int lua_imread (lua_State * state)
 	
 }
 
-//
+//Запись по указанному адресу
 int lua_imwrite (lua_State * state)
 {
 	int ret = 0;
@@ -1452,48 +1454,6 @@ int lua_imwrite (lua_State * state)
 	catch(...)
 	{
 		;
-	}
-
-	return ret;
-}
-
-//
-int lua_eigen (lua_State * state)
-{
-	int ret = 1;
-	Mat * dst;
-	Mat op_transp, op, op_2, min_max, dst1;
-	image dst_img;
-	double m;
-	
-	try
-	{
-		
-		Mat * op_1 = CImage::to_Mat((s_image *) lua_touserdata(state, 1));
-		throw_null(dst_img = image_create(op_1->rows, op_1->cols, op_1->channels()), "TODO");
-		dst = CImage::to_Mat(dst_img);
-		op_1->copyTo(op);
-		op_1->copyTo(op_2);
-		op_transp = op.t();
-		compare(op_transp, op, min_max, CMP_EQ);
-		minMaxLoc(min_max, & m);
-		printf ("%f \n", m);
-		
-		if (m == 255)
-		{	
-			op_2 = Mat_<float>(op);
-			//eigen(op_2, dst1, -1, -1);
-			dst1 = op_2;
-			* dst = Mat_<uint8_t>(dst1);
-			lua_pushlightuserdata(state, dst_img);
-		}
-		
-	}
-	catch(...)
-	{
-		image_delete(dst_img);
-
-		ret = 0;
 	}
 
 	return ret;
