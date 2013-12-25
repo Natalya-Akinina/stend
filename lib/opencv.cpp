@@ -15,7 +15,7 @@ void opencv_register(lua_State * state)
 	lua_register(state, "bitwise_or", lua_bitwise_or);
 	lua_register(state, "bitwise_xor", lua_bitwise_xor);
 	lua_register(state, "adaptiveThreshold", lua_adaptiveThreshold);
-	lua_register(state, "abs", lua_abs);
+	lua_register(state, "mod", lua_abs);
 	lua_register(state, "dct", lua_dct);
 	lua_register(state, "idct", lua_idct);
 	lua_register(state, "dft", lua_dft);	
@@ -55,6 +55,7 @@ void opencv_register(lua_State * state)
 	lua_register(state, "Size", lua_Size);
 	lua_register(state, "imread", lua_imread);
 	lua_register(state, "imwrite", lua_imwrite);
+	lua_register(state, "normalize", lua_normalize);
 	
 }
 
@@ -411,7 +412,7 @@ int lua_dct(lua_State * state)
 {
   
 	int ret = 1;
-	image dst_img;
+	matrix dst_mat;
 	Mat * dst;
 	Mat * op_1;
 	Mat op_gray,op_float, res;
@@ -419,19 +420,19 @@ int lua_dct(lua_State * state)
 	try
 	{
 		throw_null(op_1 = CImage::to_Mat((s_image *) lua_touserdata(state, 1)), "TODO");
-		throw_null(dst_img = image_create(op_1->rows, op_1->cols, op_1->channels()), "TODO");
-		dst = CImage::to_Mat(dst_img);
+		throw_null(dst_mat = matrix_create(op_1->rows, op_1->cols, op_1->channels(), 2), "TODO");
+		dst = CMatrix::to_Mat(dst_mat);
 		
 		cvtColor (* op_1, op_gray, CV_RGB2GRAY);
 		op_float = Mat_<float>(op_gray);
 		dct (op_float, res, DCT_ROWS);
-		* dst = Mat_<uint8_t>(res);
+		* dst = res;
 
-		lua_pushlightuserdata(state, dst_img);
+		lua_pushlightuserdata(state, dst_mat);
 	}
 	catch(...)
 	{
-		image_delete(dst_img);
+	      matrix_delete(dst_mat);
 
 		ret = 0;
 	}
@@ -451,11 +452,11 @@ int lua_idct(lua_State * state)
 
 	try
 	{
-		throw_null(op_1 = CImage::to_Mat((s_image *) lua_touserdata(state, 1)), "TODO");
+		throw_null(op_1 = CMatrix::to_Mat( lua_touserdata(state, 1)), "TODO");
 		throw_null(dst_img = image_create(op_1->rows, op_1->cols, op_1->channels()), "TODO");
 		dst = CImage::to_Mat(dst_img);
 		
-		op_float = Mat_<float>(* op_1);
+		op_float = * op_1;
 		dct (op_float, res, DCT_ROWS);
 		* dst = Mat_<uint8_t>(res);
 		
@@ -476,31 +477,28 @@ int lua_dft(lua_State * state)
   
   
 	int ret = 1;
-	image dst_img;
+	matrix dst_mat;
 	Mat * dst;
 	Mat * op_1;
-	Mat op_gray, I, dst1;
-	vector <Mat> res;
+	Mat op_gray, I;
 
 	try
 	{
 		throw_null(op_1 = CImage::to_Mat((s_image *) lua_touserdata(state, 1)), "TODO");
-		throw_null(dst_img = image_create(op_1->rows, op_1->cols, op_1->channels()), "TODO");
-		dst = CImage::to_Mat(dst_img);
+		throw_null(dst_mat = matrix_create(op_1->rows, op_1->cols, 2, 2), "TODO");
+		dst = CMatrix::to_Mat(dst_mat);
 		
 		cvtColor (* op_1, op_gray, CV_RGB2GRAY);
 		vector <Mat> ch_I = {Mat_<float>(op_gray), Mat::zeros(op_gray.size(), CV_32F)};
 		merge(ch_I,I);
 		
 
-		dft(I, dst1);
-		split (dst1, res);
-		* dst = Mat_<uint8_t>(res[0]);
-		lua_pushlightuserdata(state, dst_img);
+		dft(I, *dst);
+		lua_pushlightuserdata(state, dst_mat);;
 	}
 	catch(...)
 	{
-		image_delete(dst_img);
+		 matrix_delete(dst_mat);
 
 		ret = 0;
 	}
@@ -516,20 +514,16 @@ int lua_idft(lua_State * state)
 	image dst_img;
 	Mat * dst;
 	Mat * op_1;
-	Mat op_gray, I, dst1;
+	Mat dst1;
 	vector <Mat> res;
 
 	try
 	{
-		throw_null(op_1 = CImage::to_Mat((s_image *) lua_touserdata(state, 1)), "TODO");
-		throw_null(dst_img = image_create(op_1->rows, op_1->cols, op_1->channels()), "TODO");
+		throw_null(op_1 = CMatrix::to_Mat(lua_touserdata(state, 1)), "TODO");
+		throw_null(dst_img = image_create(op_1->rows, op_1->cols, 1), "TODO");
 		dst = CImage::to_Mat(dst_img);
-		
-		op_gray = * op_1;
-		vector <Mat> ch_I = {Mat_<float>(op_gray), Mat::zeros(op_gray.size(), CV_32F)};
-		merge(ch_I,I);
 
-		idft (I, dst1);
+		idft (*op_1, dst1, DFT_SCALE);
 		split (dst1, res);
 		* dst = Mat_<uint8_t>(res[0]);
 		lua_pushlightuserdata(state, dst_img);
@@ -1454,6 +1448,43 @@ int lua_imwrite (lua_State * state)
 	catch(...)
 	{
 		;
+	}
+
+	return ret;
+}
+
+//
+int lua_normalize (lua_State * state)
+{
+	int ret = 1;
+	Mat * op_1, * dst;
+	vector <Mat> res;
+	image dst_img;
+	int ch;
+	
+	try
+	{
+		throw_null(op_1 = CMatrix::to_Mat(lua_touserdata(state, 1)), "TODO");
+		throw_null(dst_img = image_create(op_1->rows, op_1->cols, 1), "TODO");
+		dst = CImage::to_Mat(dst_img);
+		
+		ch = op_1->channels();
+		
+		if (ch == 2)
+		{
+			split (* op_1, res);
+			* dst = Mat_<uint8_t>(res[0]);
+		}
+		else
+			* dst = Mat_<uint8_t>(* op_1);
+		
+		lua_pushlightuserdata(state, dst_img);
+	}
+	catch(...)
+	{
+		image_delete(dst_img);
+
+		ret = 0;
 	}
 
 	return ret;

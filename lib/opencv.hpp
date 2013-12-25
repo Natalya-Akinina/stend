@@ -57,6 +57,7 @@ int lua_clone (lua_State * state);
 int lua_Size (lua_State * state);
 int lua_imread (lua_State * state);
 int lua_imwrite (lua_State * state);
+int lua_normalize (lua_State * state);
 
 #endif
 
